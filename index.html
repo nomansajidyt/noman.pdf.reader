@@ -202,6 +202,18 @@ html[data-theme=dark] .textLayer ::selection{background:rgba(143,155,255,.45)}
 @media(pointer:coarse){.pd{width:30px;height:30px}#sel button.ch{height:38px;border-radius:19px;font-size:14px}#sel button.cfg{width:38px;height:38px}}
 /* default note popup size on laptop / desktop only (phone, tablet and TV keep their own sizing); dragging the corner still overrides it */
 html[data-dev=laptop] #note{width:min(1030px,calc(100vw - var(--dw) - 64px));height:min(620px,80vh)}
+/* ---- AutoSave switch (like Word) ---- */
+.aspill{gap:8px!important}.aspill .al{font-size:13px;font-weight:500}.aspill b{font-size:13px;min-width:2.1em;text-align:left;color:var(--mute)}
+.aspill .sw{width:30px;height:17px;border-radius:9px;background:#b9bed0;position:relative;flex:none;transition:background .18s}
+.aspill .sw i{position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;transition:transform .18s;box-shadow:0 1px 2px rgba(0,0,0,.3)}
+.aspill[data-st=on] .sw{background:#2e9e5b}.aspill[data-st=on] .sw i{transform:translateX(13px)}.aspill[data-st=on] b{color:#2e9e5b}
+.aspill[data-st=perm] .sw{background:#e0a030}.aspill[data-st=perm] b{color:#c98a1b}
+.aspill:disabled .sw{opacity:.5}
+#autoPop{position:absolute;z-index:26;top:64px;right:18px;display:none;width:min(340px,92vw);background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh);padding:14px 16px}
+#autoPop h4{margin:0 0 6px;font-size:15px}#autoPop p{margin:0 0 8px;color:var(--mute);font-size:13px;line-height:1.5}#autoPop p b,#autoPop p i{color:var(--ink)}
+.apb{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}.apb button{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:7px 14px;font-weight:600}.apb button.pri{background:var(--acc);color:var(--on);border-color:transparent}
+@media(max-width:1100px){.aspill .al,.aspill b{display:none}.aspill{padding:0 6px!important}}
+@media(max-width:700px){#autosv{display:none!important}}
 </style>
 </head>
 <body>
@@ -229,16 +241,18 @@ html[data-dev=laptop] #note{width:min(1030px,calc(100vw - var(--dw) - 64px));hei
         <button id="zout" title="Zoom out" data-ic="minus"></button><span id="zl">130%</span><button id="zin" title="Zoom in" data-ic="plus"></button>
       </div>
       <div class="grp r">
+        <button id="autosv" class="aspill" role="switch" aria-checked="false" data-st="none" disabled><span class="al">AutoSave</span><i class="sw"><i></i></i><b>Off</b></button>
         <button id="boost"><b>Aa</b></button>
         <button id="pgmode"><b>◐</b></button>
         <button id="who" title="Student name shown on your notes"></button>
         <button id="theme" title="Light / dark" data-ic="moon"></button>
-        <button id="savepdf" class="go">Save PDF</button>
+        <button id="savepdf" class="go" title="Save notes into the PDF (also autosaves 2 minutes after a change)">Save PDF</button>
       </div>
     </div>
     <div id="btabs"></div>
     <div id="whoBox"><label for="whoIn">Student name</label><p>Added to every note you create, so others can see who wrote it.</p>
       <input id="whoIn" maxlength="40" placeholder="e.g. Ayesha Khan" autocomplete="off"><button id="whoSave">Save name</button><div style="clear:both"></div></div>
+    <div id="autoPop"></div>
     <div id="viewer" tabindex="0"><div id="stage">
       <div id="empty"><svg class="elogo" viewBox="0 0 48 48" width="56" height="56"><rect width="48" height="48" rx="12" fill="#3a4bd8"/><path d="M14 9h14l8 8v22a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z" fill="#fff"/><path d="M28 9l8 8h-6a2 2 0 0 1-2-2z" fill="#3a4bd8" fill-opacity=".3"/><rect x="17" y="21" width="12" height="2.6" rx="1.3" fill="#3a4bd8" fill-opacity=".45"/><rect x="15.5" y="26" width="19" height="6.4" rx="2.2" fill="#3a4bd8" fill-opacity=".22"/><rect x="17.5" y="27.9" width="14" height="2.6" rx="1.3" fill="#3a4bd8"/><rect x="17" y="35.5" width="9" height="2.6" rx="1.3" fill="#3a4bd8" fill-opacity=".45"/></svg><h2>Read it. Mark it. Keep it in the file.</h2><p>Highlights and notes are saved inside your PDF, so they come back whenever you reopen it here.</p><button id="open2">Open a PDF</button></div>
       <div id="pages"></div>
@@ -265,7 +279,69 @@ let dpr=devicePixelRatio||1;
 (async()=>{try{const t=await (await fetch(WORKER)).text();pdfjsLib.GlobalWorkerOptions.workerSrc=URL.createObjectURL(new Blob([t],{type:"text/javascript"}))}catch(e){pdfjsLib.GlobalWorkerOptions.workerSrc=WORKER}})();
 
 const toast=m=>{const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display="none",2800)};
-const setDirty=(v=true)=>{dirty=v;$("#savepdf").classList.toggle("dirty",v);if(active&&active.dirty!==v){active.dirty=v;renderTabs()}};
+const setDirty=(v=true)=>{dirty=v;$("#savepdf").classList.toggle("dirty",v);if(active&&active.dirty!==v){active.dirty=v;renderTabs()}if(v&&active)armAuto(active)};
+/* autosave: 2 minutes after the first unsaved change, for books opened with the Open button (they have a writable file handle) */
+/* AutoSave flag in the top bar: On / Off / needs permission / this book has no file to save into */
+function autoState(b){return !b?"none":!b.handle?"nofile":autoPref===false?"off":b.perm!=="granted"?"perm":"on"}
+function updateAuto(){
+  const el=$("#autosv");if(!el)return;
+  const st=autoState(active),T={
+    on:"AutoSave is on: changes are saved into the PDF 2 minutes after you make them. Click to turn it off.",
+    off:"AutoSave is off. Click to turn it on.",
+    perm:"AutoSave needs permission to write to this file. Click to allow.",
+    nofile:"AutoSave is off for this book. Click to see how to turn it on.",
+    none:"Open a PDF to use AutoSave."};
+  el.dataset.st=st;el.disabled=st==="none";el.title=T[st];el.setAttribute("aria-checked",st==="on");
+  el.querySelector("b").textContent=st==="on"?"On":st==="perm"?"Allow":"Off";
+}
+function renderAutoPop(){
+  const p=$("#autoPop");if(!active)return;const ok=!!window.showOpenFilePicker;
+  p.innerHTML="<h4>AutoSave is off for this book</h4>"+(ok
+    ?"<p>This book was opened without a link back to its file, so the browser can't save into it by itself.</p><p><b>To turn AutoSave on:</b> click <i>Connect file</i> and choose this same PDF, or close the book and reopen it with the <i>Open</i> button.</p>"
+    :"<p>Your browser can't save changes straight into a file.</p><p><b>To get AutoSave,</b> open this app in Google Chrome or Microsoft Edge on a computer. Until then, <i>Save PDF</i> downloads an updated copy that you can use to replace the original.</p>")+'<div class="apb"></div>';
+  const row=p.querySelector(".apb");
+  if(ok){const c=mk("button","pri","Connect file…");c.onclick=connectFile;row.append(c)}
+  const x=mk("button","","Close");x.onclick=()=>p.style.display="none";row.append(x);
+  p.style.display="block";
+}
+async function connectFile(){
+  const b=active;if(!b||!window.showOpenFilePicker)return;let hs;
+  try{hs=await showOpenFilePicker({multiple:false,id:"noman-pdf-reader",types:[{description:"PDF",accept:{"application/pdf":[".pdf"]}}]})}catch(e){return}
+  const h=hs[0];
+  if(h.name!==b.fname){toast(`That is "${h.name}". Please pick the file named "${b.fname}".`);return}
+  const f=await h.getFile();
+  if(b.diskSize&&f.size!==b.diskSize&&!confirm(`"${h.name}" is a different size from the copy you opened. Saving will replace it with this book plus your notes. Continue?`))return;
+  b.handle=h;if(b===active)handle=h;
+  try{b.perm=await h.requestPermission({mode:"readwrite"})}catch(e){b.perm="prompt"}
+  $("#autoPop").style.display="none";updateAuto();
+  toast(b.perm==="granted"?"AutoSave is on for "+b.fname:"File connected. Click the AutoSave switch to allow saving.");
+  if(b.dirty)armAuto(b);
+}
+$("#autosv").onclick=()=>{
+  const b=active;if(!b)return;const st=$("#autosv").dataset.st;
+  if(st==="nofile"){const p=$("#autoPop");p.style.display==="block"?p.style.display="none":renderAutoPop();return}
+  if(st==="perm"){b.handle.requestPermission({mode:"readwrite"}).then(r=>{b.perm=r;updateAuto();toast(r==="granted"?"AutoSave is on":"Permission was not given, so AutoSave stays off");if(r==="granted"&&b.dirty)armAuto(b)}).catch(()=>{});return}
+  autoPref=!autoPref;try{localStorage.autosave=autoPref?"1":"0"}catch(e){}
+  updateAuto();toast(autoPref?"AutoSave is on":"AutoSave is off. Use Save PDF to save.");
+  if(autoPref)books.forEach(x=>{if(x.dirty)armAuto(x)});
+};
+document.addEventListener("mousedown",e=>{if(!e.target.closest("#autoPop,#autosv"))$("#autoPop").style.display="none"});
+{const _rt=renderTabs;renderTabs=function(...a){const r=_rt.apply(this,a);updateAuto();return r}}
+const AUTO_MS=120000;let lastAct=0;
+document.addEventListener("input",()=>{lastAct=Date.now()},true);
+var autoPref=true;try{autoPref=localStorage.autosave!=="0"}catch(e){}
+function armAuto(b){
+  if(!autoPref)return;
+  if(b.handle&&!b.permTry&&!b.permBusy){   /* ask for write access early, while the user is interacting */
+    b.permBusy=1;b.handle.requestPermission({mode:"readwrite"}).then(r=>{b.permTry=1;b.perm=r;if(r!=="granted")b.autoWarned=1;updateAuto()}).catch(()=>{}).finally(()=>b.permBusy=0)}
+  if(b.autoT)return;
+  b.autoT=setTimeout(function tick(){
+    b.autoT=null;
+    if(!books.includes(b)||!b.dirty||!autoPref)return;
+    if(Date.now()-lastAct<4000||$("#dlg")||b.saving){b.autoT=setTimeout(tick,8000);return}   /* don't save mid-keystroke */
+    saveBook(b,true);
+  },AUTO_MS);
+}
 addEventListener("beforeunload",e=>{stash();if(books.some(b=>b.dirty)){e.preventDefault();e.returnValue="";setTimeout(()=>{const l=books.filter(b=>b.dirty);if(l.length&&!$("#dlg"))askSave(l).then(ok=>ok&&toast("Done. You can close the tab now."))},400)}});
 const plain=h=>{const d=document.createElement("div");d.innerHTML=h;return (d.innerText||d.textContent||"").trim()};
 const pageEl=n=>document.querySelector(`.page[data-p="${n}"]`);
@@ -330,7 +406,18 @@ async function pick(){
 $("#open").onclick=$("#open2").onclick=pick;
 $("#file").onchange=async e=>{const fs=[...e.target.files];e.target.value="";for(const f of fs)await load(f)};
 addEventListener("dragover",e=>e.preventDefault());
-addEventListener("drop",e=>{e.preventDefault();(async()=>{for(const f of e.dataTransfer.files)if(/pdf$/i.test(f.type||f.name))await load(f)})()});
+addEventListener("drop",e=>{
+  e.preventDefault();
+  /* ask for the file handles right now (they are only available during the drop event) so dropped books can autosave too */
+  const jobs=[...e.dataTransfer.items].filter(i=>i.kind==="file").map(i=>({hp:i.getAsFileSystemHandle?i.getAsFileSystemHandle():null,f:i.getAsFile()}));
+  (async()=>{for(const j of jobs){
+    let h=null,f=null;
+    try{h=await j.hp}catch(err){}
+    if(h&&h.kind==="file"){try{f=await h.getFile()}catch(err){h=null}}
+    if(!f){f=j.f;h=null}
+    if(f&&/pdf$/i.test(f.type||f.name))await load(f,h);
+  }})();
+});
 
 async function readNotes(b){
   try{const doc=await PDFLib.PDFDocument.load(b,{ignoreEncryption:true,updateMetadata:false});
@@ -372,11 +459,11 @@ async function load(f,h=null){
   const meta=await readNotes(by),nts=meta.notes,pal=meta.palette&&meta.palette.length?meta.palette:defPalette();
   nts.forEach(n=>{n.editing=false;if(!n.cid){const e=pal.find(x=>x.color.toLowerCase()===String(n.color||"").toLowerCase());if(e)n.cid=e.id}});
   const w1=(await doc.getPage(1)).getViewport({scale:1}).width;
-  const b={id:++bid,pdf:doc,bytes:by,handle:h,fname:f.name,scale:autoScale(w1),notes:nts,palette:pal,cur:1,dirty:false,scroll:0,snap:snapOf(nts,pal)};
-  books.push(b);await activate(b);
+  const b={id:++bid,pdf:doc,bytes:by,handle:h,fname:f.name,scale:autoScale(w1),notes:nts,palette:pal,cur:1,dirty:false,scroll:0,snap:snapOf(nts,pal),diskSize:f.size,perm:"prompt"};
+  books.push(b);if(h)h.queryPermission({mode:"readwrite"}).then(r=>{b.perm=r;updateAuto()}).catch(()=>{});await activate(b);
   toast(nts.length?`Loaded ${nts.length} note${nts.length>1?"s":""} from the PDF`:"No saved notes in this PDF yet");
 }
-function clearView(){
+function clearView(){setTimeout(updateAuto,0);
   closeNote();hidePeek();gen++;if(io)io.disconnect();
   pdf=null;bytes=null;handle=null;fname="";notes=[];cur=1;dims={};seen={};act=null;active=null;dirty=false;
   $("#pages").innerHTML="";$("#sel").style.display="none";$("#savepdf").classList.remove("dirty");
@@ -843,8 +930,18 @@ function refreshList(){
 }
 
 /* Save PDF: highlights + notes are written into the file */
-async function saveBook(b){
-  if(b===active){closeNote();stash()}
+/* one save at a time per book; a manual save during an autosave simply waits for it */
+function saveBook(b,auto=false){
+  if(b.saving)return b.saving;
+  const p=doSave(b,auto).finally(()=>{b.saving=null});b.saving=p;return p;
+}
+async function doSave(b,auto){
+  if(auto){   /* silent saves only go to a file we already have permission to write */
+    if(!b.handle)return false;
+    try{if(await b.handle.queryPermission({mode:"readwrite"})!=="granted"){if(!b.autoWarned){b.autoWarned=1;toast("AutoSave is paused. Click the AutoSave switch at the top to allow writing to this file.")}return false}}catch(e){return false}
+  }
+  if(b===active){if(!auto)closeNote();stash()}
+  const startSnap=snapOf(b.notes,b.palette);
   try{
     const {PDFDocument,PDFName,PDFString,PDFHexString,PDFDict}=PDFLib;
     const doc=await PDFDocument.load(b.bytes,{ignoreEncryption:true}),ctx=doc.context;
@@ -867,12 +964,17 @@ async function saveBook(b){
     const store=b.notes.map(({editing,...n})=>n);
     doc.catalog.set(PDFName.of("MarginNotes"),PDFString.of(btoa(unescape(encodeURIComponent(JSON.stringify({v:2,palette:b.palette,notes:store}))))));
     const out=await doc.save();
-    if(b.handle){const w=await b.handle.createWritable();await w.write(out);await w.close();toast("Saved to "+b.fname)}
+    if(b.handle){const w=await b.handle.createWritable();await w.write(out);await w.close();b.perm="granted";toast((auto?"Autosaved ":"Saved to ")+b.fname)}
     else{const a=mk("a");a.href=URL.createObjectURL(new Blob([out],{type:"application/pdf"}));a.download=b.fname;a.click();toast("Downloaded "+b.fname+". Replace your original with it.")}
-    b.bytes=out;b.snap=snapOf(b.notes,b.palette);b.dirty=false;
-    if(b===active){bytes=out;setDirty(false)}else renderTabs();
+    /* anything typed while the save was running stays marked as unsaved */
+    const clean=snapOf(b.notes,b.palette)===startSnap;
+    b.bytes=out;b.diskSize=out.length;b.snap=startSnap;b.dirty=!clean;
+    if(b===active){bytes=out;setDirty(!clean)}else renderTabs();
+    updateAuto();
     return true;
-  }catch(e){console.error(e);alert("Could not save "+b.fname+": "+e.message);return false}
+  }catch(e){console.error(e);
+    if(auto){if(!b.autoWarned){b.autoWarned=1;toast("Autosave failed. Press Save PDF to try again.")}return false}
+    alert("Could not save "+b.fname+": "+e.message);return false}
 }
 $("#savepdf").onclick=async()=>{
   if(!active)return alert("Open a PDF first.");
