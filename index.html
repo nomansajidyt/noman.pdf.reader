@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#3a4bd8"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Noman's PDF Reader">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Newsreader:ital,wght@0,400;0,500;1,400&family=Patrick+Hand&display=swap" rel="stylesheet">
 <style>
 :root{--dw:320px;--desk:#e6e8ef;--panel:#f8f9fc;--glass:rgba(255,255,255,.8);--ink:#161a28;--mute:#6a7088;--line:#dcdfe9;--acc:#3a4bd8;--on:#fff;--hover:#eceef6;--sh:0 10px 34px rgba(20,25,60,.18);--ui:"Figtree","Segoe UI",system-ui,sans-serif;--serif:"Newsreader",Georgia,serif}
 :root[data-theme=dark]{--desk:#11131b;--panel:#1a1d29;--glass:rgba(26,29,41,.82);--ink:#eceef7;--mute:#8e94ab;--line:#2b3042;--acc:#8f9bff;--on:#10122a;--hover:#252a3b;--sh:0 10px 34px rgba(0,0,0,.5)}
@@ -227,6 +227,11 @@ html[data-theme=dark]{--nbpaper:#1f2233;--nbline:#2d3250;--nbink:#e8eaf6;--nbmar
 .ned[data-empty="1"]:before{content:attr(data-ph);position:absolute;left:calc(var(--z)*38px);right:calc(var(--z)*20px);color:var(--mute);pointer-events:none;font-style:italic}
 .ned p,.ned div{margin:0}.ned ul,.ned ol{margin:0;padding-left:calc(var(--z)*22px)}.ned li{margin:0}
 .ned h3{margin:0;font-size:calc(var(--z)*16px);line-height:calc(var(--z)*24px)}
+/* handwriting by default; line boxes are locked to the ruled lines so equations, pictures and sub/superscripts cannot push the text off them */
+.ned{font-family:"Patrick Hand","Segoe Print","Bradley Hand","Chalkboard SE","Comic Sans MS",cursive;font-size:calc(var(--z)*16px)}
+.ned sup,.ned sub{line-height:0}
+.ned img{vertical-align:middle!important;margin-top:calc(var(--z)*-12px);margin-bottom:calc(var(--z)*-12px)}
+.ned p,.ned li,.ned h3{line-height:calc(var(--z)*24px)}
 .ned a{color:var(--acc)}.ned code{font-size:.9em;background:var(--hover);border-radius:4px;padding:0 .25em}
 #nbtool{position:absolute;z-index:22;bottom:16px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:2px;padding:5px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh);max-width:96%;flex-wrap:wrap;justify-content:center}
 .fbar button,.fbar .cw{border:0;background:none;border-radius:8px;min-width:32px;height:32px;padding:0 8px;color:var(--ink);display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;font-size:13px}
@@ -237,6 +242,11 @@ html[data-theme=dark]{--nbpaper:#1f2233;--nbline:#2d3250;--nbink:#e8eaf6;--nbmar
 .fbar.inpop{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:2px;margin-bottom:8px;padding:4px;background:var(--hover);border-radius:10px}
 .fbar.inpop button:hover,.fbar.inpop .cw:hover{background:var(--line)}
 @media(pointer:coarse){.fbar button,.fbar .cw{min-width:38px;height:38px}}
+.ed img,.nv img,.ned img{max-width:100%;height:auto}.ed img,.ned img{cursor:pointer}
+.pic{display:inline-block;max-width:100%}
+.ed table,.nv table,.ned table{border-collapse:collapse;margin:4px 0;max-width:100%}
+.ed td,.ed th,.nv td,.nv th,.ned td,.ned th{border:1px solid var(--line);padding:4px 8px;vertical-align:top;text-align:left}
+.ed th,.nv th,.ned th{font-weight:700;background:var(--hover)}.ed td p,.nv td p,.ed th p,.nv th p{margin:0}
 .ed a,.nv a{color:var(--acc)}.ed code,.nv code{font-size:.9em;background:var(--hover);border-radius:4px;padding:0 .25em}
 #nbtgl.on{background:var(--hover)!important;color:var(--acc)}
 @media(max-width:1300px){#nbtgl .nbl{display:none}}
@@ -367,6 +377,7 @@ html.tx *,html.tx *:before,html.tx *:after{transition:background-color .35s ease
       <button data-c="formatBlock" data-a="H3" title="Heading">H</button>
       <label class="cw" title="Text colour">A<i style="background:#c0392b"></i><input type="color" data-k="foreColor" value="#c0392b"></label>
       <label class="cw" title="Highlight colour">▮<i style="background:#ffe14d"></i><input type="color" data-k="hiliteColor" value="#ffe14d"></label>
+      <button data-img="1" title="Insert picture (you can also paste or drop one)">🖼 Image</button><button data-rm="1" title="Remove the picture you clicked on (or click it and press Delete)">✕ Image</button>
       <button data-c="removeFormat" title="Clear formatting">Clear</button>
     </div>
     <div id="viewer" tabindex="0"><div id="stage">
@@ -460,6 +471,7 @@ function armAuto(b){
   },AUTO_MS);
 }
 addEventListener("beforeunload",e=>{stash();if(books.some(b=>b.dirty)){e.preventDefault();e.returnValue="";setTimeout(()=>{const l=books.filter(b=>b.dirty);if(l.length&&!$("#dlg"))askSave(l).then(ok=>ok&&toast("Done. You can close the tab now."))},400)}});
+const plainImg=h=>plain(h.replace(/<img[^>]*>/gi," [image] "));
 const plain=h=>{const d=document.createElement("div");d.innerHTML=h;return (d.innerText||d.textContent||"").trim()};
 var PG=[];const pageEl=n=>PG[n-1]||null;
 const rid=()=>Math.random().toString(36).slice(2,8);
@@ -871,30 +883,41 @@ const nbColorOK=c=>/^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%\/]+\)|[a-z]{3,20})$/i.test(
 /* rich paste: keeps bold/italic/underline/strike, sub/superscript, lists (Word and Google Docs too), headings, links, text and highlight colour; drops everything else */
 function nbSanitize(html){
   const doc=new DOMParser().parseFromString(html,"text/html");
-  doc.querySelectorAll("style,script,meta,link,title,xml,o\\:p,img,svg,canvas,iframe,object,head").forEach(x=>x.remove());
+  doc.querySelectorAll("style,script,meta,link,title,xml,o\\:p,svg,canvas,iframe,object,head").forEach(x=>x.remove());
   doc.querySelectorAll("p").forEach(p=>{   /* Word lists are styled paragraphs: turn them into real lists */
     if(!/mso-list/i.test(p.getAttribute("style")||""))return;
     const m=p.querySelector('[style*="mso-list:Ignore"],[style*="mso-list: Ignore"]');
     const ord=!!m&&/^\s*(\d+|[A-Za-z]|[ivxIVX]+)[.)]/.test(m.textContent);
     if(m)m.remove();
-    const li=doc.createElement("li");li.dataset.ord=ord?"1":"";while(p.firstChild)li.appendChild(p.firstChild);p.replaceWith(li);
+    const lv=parseInt(((p.getAttribute("style")||"").match(/mso-list:[^;]*?level(\d+)/i)||[])[1],10)||1;
+    const li=doc.createElement("li");li.dataset.ord=ord?"1":"";li.dataset.lv=lv;while(p.firstChild)li.appendChild(p.firstChild);p.replaceWith(li);
   });
+  let stk=[];   /* Word lists: keep the bullet / number levels (nested lists) */
   doc.body.querySelectorAll("li[data-ord]").forEach(li=>{
     const par=li.parentElement;if(/^(UL|OL)$/.test(par.tagName))return;
-    const tag=li.dataset.ord?"ol":"ul",prev=li.previousElementSibling;
-    if(prev&&prev.dataset&&prev.dataset.w===tag)prev.appendChild(li);
-    else{const w=doc.createElement(tag);w.dataset.w=tag;par.insertBefore(w,li);w.appendChild(li)}
+    const tag=li.dataset.ord?"ol":"ul",L=+li.dataset.lv||1;
+    if(!(stk.length&&li.previousElementSibling===stk[0].el))stk=[];
+    while(stk.length&&stk[stk.length-1].lv>L)stk.pop();
+    let top=stk[stk.length-1],mk=!top||top.lv<L;
+    if(top&&top.lv===L&&top.tag!==tag){stk.pop();top=stk[stk.length-1];mk=true}
+    if(mk){const w=doc.createElement(tag);
+      if(!top)par.insertBefore(w,li);else(top.el.lastElementChild||top.el).appendChild(w);
+      stk.push({lv:L,tag,el:w})}
+    stk[stk.length-1].el.appendChild(li);
   });
   const esc=t=>t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-  const OK={B:"b",STRONG:"b",I:"i",EM:"i",U:"u",S:"s",STRIKE:"s",DEL:"s",SUB:"sub",SUP:"sup",UL:"ul",OL:"ol",LI:"li",BR:"br",P:"p",DIV:"p",BLOCKQUOTE:"p",PRE:"p",H1:"h3",H2:"h3",H3:"h3",H4:"h3",H5:"h3",H6:"h3",CODE:"code",TR:"p",TH:"b"};
+  const OK={B:"b",STRONG:"b",I:"i",EM:"i",U:"u",S:"s",STRIKE:"s",DEL:"s",SUB:"sub",SUP:"sup",UL:"ul",OL:"ol",LI:"li",BR:"br",P:"p",DIV:"p",BLOCKQUOTE:"p",PRE:"p",H1:"h3",H2:"h3",H3:"h3",H4:"h3",H5:"h3",H6:"h3",CODE:"code",TABLE:"table",TR:"tr",TD:"td",TH:"th"};
   const walk=n=>{
-    if(n.nodeType===3)return esc(n.nodeValue.replace(/\s+/g," "));
+    if(n.nodeType===3){if(/^(TABLE|TBODY|THEAD|TFOOT|TR|COLGROUP)$/.test(n.parentNode&&n.parentNode.tagName||"")&&!n.nodeValue.trim())return "";return esc(n.nodeValue.replace(/\s+/g," "))}
     if(n.nodeType!==1)return "";
+    if(n.tagName==="IMG"){const u=n.getAttribute("src")||"";if(!/^data:image\/(png|jpe?g|gif|webp|bmp);base64,/i.test(u))return "";
+      const w=(n.style&&n.style.width)||(n.getAttribute("width")?n.getAttribute("width")+"px":""),va=(n.style&&n.style.verticalAlign)||"";
+      const sty=(/^[\d.]+(px|pt)$/.test(w)?`width:${w};`:"")+(/^(-?[\d.]+(px|pt)|middle|baseline|text-bottom|text-top)$/.test(va)?`vertical-align:${va};`:"");
+      return `<img src="${u}"${sty?` style="${sty}"`:""}>`}
     let tag=OK[n.tagName];const st=n.style||{},fw=st.fontWeight;
     if(tag==="br")return "<br>";
     if(tag==="b"&&(fw==="normal"||(fw&&+fw<600)))tag="";   /* Google Docs wraps everything in <b style="font-weight:normal"> */
     let inner=[...n.childNodes].map(walk).join("");
-    if(n.tagName==="TD")inner+=" ";
     const fs=st.fontStyle,td=(st.textDecorationLine||st.textDecoration||""),va=st.verticalAlign;
     if(tag!=="b"&&(fw==="bold"||+fw>=600))inner=`<b>${inner}</b>`;
     if(tag!=="i"&&fs==="italic")inner=`<i>${inner}</i>`;
@@ -907,13 +930,16 @@ function nbSanitize(html){
     if(bg&&nbColorOK(bg)){const l=nbLum(bg);if(l===null||l<0.92)css+=`background-color:${bg};`}
     if(css&&inner.trim())inner=`<span style="${css}">${inner}</span>`;
     if(n.tagName==="A"){const h=n.getAttribute("href")||"";return /^(https?:|mailto:)/i.test(h)?`<a href="${esc(h).replace(/"/g,"&quot;")}" target="_blank" rel="noopener">${inner}</a>`:inner}
-    return tag?`<${tag}>${inner}</${tag}>`:inner;
+    const at=(tag==="td"||tag==="th")?["colspan","rowspan"].map(k=>{const v=parseInt(n.getAttribute(k),10);return v>1&&v<50?` ${k}="${v}"`:""}).join(""):"";
+    return tag?`<${tag}${at}>${inner}</${tag}>`:inner;
   };
   return walk(doc.body).replace(/<p>(\s|&nbsp;)*<\/p>/g,"");
 }
 /* plain-text copy of a notebook page (written into the PDF as a sticky note so other PDF readers can show it) */
 function nbPlain(html){
   const d=document.createElement("div");d.innerHTML=html;
+  d.querySelectorAll("img").forEach(im=>im.replaceWith("[image]"));
+  d.querySelectorAll("td,th").forEach(c=>{if(c.nextElementSibling)c.insertAdjacentText("beforeend","  |  ")});
   d.querySelectorAll("li").forEach(li=>{const ol=li.parentElement&&li.parentElement.tagName==="OL",i=[...li.parentElement.children].indexOf(li)+1;li.insertBefore(document.createTextNode((ol?i+". ":"• ")),li.firstChild)});
   d.querySelectorAll("p,div,li,h1,h2,h3,tr").forEach(e=>e.insertAdjacentText("afterend","\n"));
   d.querySelectorAll("br").forEach(e=>e.replaceWith("\n"));
@@ -947,13 +973,15 @@ function addNb(el){
   ed.dataset.ph="Your notes for page "+pn+". Type - or 1. and a space to start a list.";
   const h0=b.nb[pn]||"";ed.innerHTML=h0;ed.dataset.empty=h0?"":"1";
   ed.oninput=()=>{const h=ed.innerHTML;if(nbBlank(h)){delete b.nb[pn];ed.dataset.empty="1"}else{b.nb[pn]=h;ed.dataset.empty=""}setDirty()};
-  ed.onpaste=nbPaste;ed.onkeydown=nbKeys;
+  ed.onpaste=nbPaste;ed.onkeydown=nbKeys;ed.ondrop=imgDrop;
   nb.append(ed);el.appendChild(nb);
 }
 function nbPaste(e){
   const cd=e.clipboardData;if(!cd)return;e.preventDefault();
   const html=cd.getData("text/html"),txt=cd.getData("text/plain");let out="";
+  const pics=imgFiles(cd.files);
   if(html&&html.length<2000000){try{out=nbSanitize(html)}catch(err){out=""}}
+  if(pics.length&&!plain(out).trim()&&!txt.trim()){insertImages(pics,e.currentTarget||document.activeElement.closest(".ned,.ed"));return}
   if(!out.trim()){out=txt.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\t/g,"    ").replace(/\r?\n/g,"<br>")}
   document.execCommand("insertHTML",false,out);
 }
@@ -976,11 +1004,45 @@ function nbKeys(e){
   }
 }
 /* formatting bar: ONE definition (#nbtool). It floats under the notebook page, and an identical copy sits inside the note window */
+/* pictures: shrunk to max 1200px and stored inside the note as a data: image, so they travel inside the PDF */
+const imgFiles=fl=>[...(fl||[])].filter(f=>/^image\/(png|jpe?g|gif|webp|bmp)$/i.test(f.type));
+function imgData(f){return new Promise(res=>{
+  const u=URL.createObjectURL(f),im=new Image();
+  im.onload=()=>{const M=1200,k=Math.min(1,M/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement("canvas");
+    c.width=Math.max(1,Math.round(im.naturalWidth*k));c.height=Math.max(1,Math.round(im.naturalHeight*k));
+    const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,0,0,c.width,c.height);
+    URL.revokeObjectURL(u);res(c.toDataURL("image/jpeg",.82))};
+  im.onerror=()=>{URL.revokeObjectURL(u);res(null)};im.src=u})}
+async function insertImages(files,ed,rng){
+  files=imgFiles(files);if(!files.length||!ed)return;
+  const urls=(await Promise.all(files.map(imgData))).filter(Boolean);
+  if(!urls.length){toast("That picture could not be read.");return}
+  ed.focus();const s=getSelection();
+  if(rng&&ed.contains(rng.startContainer)){s.removeAllRanges();s.addRange(rng)}
+  else if(!ed.contains(s.anchorNode)){const r=document.createRange();r.selectNodeContents(ed);r.collapse(false);s.removeAllRanges();s.addRange(r)}
+  document.execCommand("insertHTML",false,urls.map(u=>`<img src="${u}">`).join("<br>")+"<br>");
+  if(ed.oninput)ed.oninput();
+}
+/* dropped picture files (the browser would otherwise open them) */
+function imgDrop(e){const f=imgFiles(e.dataTransfer&&e.dataTransfer.files);if(!f.length)return;e.preventDefault();
+  let r=null;if(document.caretRangeFromPoint)r=document.caretRangeFromPoint(e.clientX,e.clientY);insertImages(f,e.currentTarget,r)}
+/* clicking a picture selects it; Delete / Backspace or the "Remove image" button then removes it */
+let lastImg=null;
+addEventListener("click",e=>{const im=e.target&&e.target.tagName==="IMG"&&e.target;if(!im||!im.closest(".ed,.ned"))return;
+  lastImg=im;const r=document.createRange();r.selectNode(im);const s=getSelection();s.removeAllRanges();s.addRange(r)},true);
 const EDS=".ned,.ed";let fmtRng=null;
 document.addEventListener("selectionchange",()=>{const s=getSelection();if(!s.rangeCount||!s.anchorNode)return;const el=s.anchorNode.nodeType===1?s.anchorNode:s.anchorNode.parentElement;if(el&&el.closest(EDS))fmtRng=s.getRangeAt(0).cloneRange()});
 function fmtTouch(){const a=document.activeElement,ed=a&&a.closest&&a.closest(EDS);if(ed&&ed.oninput)ed.oninput()}
 function wireFmt(T){
   T.querySelectorAll("button[data-c]").forEach(b=>{b.onmousedown=e=>e.preventDefault();b.onclick=()=>{document.execCommand(b.dataset.c,false,b.dataset.a||null);fmtTouch()}});
+  T.querySelectorAll("button[data-rm]").forEach(b=>{b.onmousedown=e=>e.preventDefault();b.onclick=()=>{
+    if(!lastImg||!lastImg.isConnected)return toast("Click a picture first, then press this button.");
+    const ed=lastImg.closest(".ed,.ned");lastImg.remove();lastImg=null;if(ed&&ed.oninput)ed.oninput()}});
+  T.querySelectorAll("button[data-img]").forEach(b=>{b.onmousedown=e=>e.preventDefault();b.onclick=()=>{
+    const ed=T.classList.contains("inpop")?T.parentElement.querySelector(".ed"):(fmtRng&&(fmtRng.startContainer.nodeType===1?fmtRng.startContainer:fmtRng.startContainer.parentElement).closest(".ned"));
+    if(!ed)return toast("Click inside a note first.");
+    const rng=fmtRng,f=document.createElement("input");f.type="file";f.accept="image/*";f.multiple=true;
+    f.onchange=()=>insertImages(f.files,ed,rng);f.click()}});
   T.querySelectorAll(".cw input").forEach(inp=>{inp.oninput=e=>{
     const v=e.target.value;inp.previousElementSibling.style.background=v;
     if(fmtRng){const ed=(fmtRng.startContainer.nodeType===1?fmtRng.startContainer:fmtRng.startContainer.parentElement).closest(EDS);if(ed){ed.focus();const s=getSelection();s.removeAllRanges();s.addRange(fmtRng)}}
@@ -1226,9 +1288,12 @@ function renderPop(n){
   if(n.editing){
     const tb=newFmtBar();
     body=mk("div","ed");body.contentEditable="true";body.innerHTML=n.html;
-    body.oninput=()=>{n.html=body.innerHTML;setDirty()};body.onkeydown=nbKeys;   /* no onpaste here: the note window pastes natively (as in v26), so complex Word content keeps its formatting */
+    body.oninput=()=>{n.html=body.innerHTML;setDirty()};body.onkeydown=nbKeys;body.ondrop=imgDrop;
+    /* the note window pastes natively (as in v26), so Word content is untouched; we only step in when the clipboard is just a picture */
+    body.onpaste=e=>{const cd=e.clipboardData,pics=imgFiles(cd&&cd.files);
+      if(pics.length&&!plain(cd.getData("text/html")).trim()&&!cd.getData("text/plain").trim()){e.preventDefault();insertImages(pics,body)}};
     const s=mk("button","","Save the note");
-    s.onclick=()=>{n.editing=false;if(!plain(n.html))n.html="";if(!n.author&&student){n.author=student;n.date=n.date||Date.now()}setDirty();renderPop(n);refreshList();toast("Note saved. Press Save PDF to keep it in the file.")};
+    s.onclick=()=>{n.editing=false;if(!plain(n.html)&&!/<img/i.test(n.html))n.html="";if(!n.author&&student){n.author=student;n.date=n.date||Date.now()}setDirty();renderPop(n);refreshList();toast("Note saved. Press Save PDF to keep it in the file.")};
     foot.append(s);pop.append(h,dots,by,q,tb,body,foot);setTimeout(()=>body.focus(),0);
   }else{
     const has=!!n.html.trim();
@@ -1253,7 +1318,7 @@ function refreshList(){
   if(!list.length){box.append(mk("p","hint",notes.length?"No notes in this colour.":"No notes yet. Select text in the book and pick a highlight colour."));return}
   [...list].sort((a,b)=>a.page-b.page||a.rects[0][1]-b.rects[0][1]).forEach(n=>{
     const b=mk("button","nitem");b.style.setProperty("--c",n.color);
-    const t=plain(n.html),en=entryOf(n);
+    const t=plainImg(n.html),en=entryOf(n);
     b.innerHTML=`<small></small><em></em><span></span>`;
     b.querySelector("small").textContent="Page "+n.page+(en&&en.label?" · "+en.label:"")+(n.author?" · "+n.author:"")+(n.date?" · "+stamp(n.date):"");
     b.querySelector("em").textContent="“"+(n.text.length>70?n.text.slice(0,70)+"…":n.text)+"”";
@@ -1291,7 +1356,7 @@ async function doSave(b,auto){
         });
         const rgb=[1,3,5].map(k=>parseInt(n.color.slice(k,k+2),16)/255),lbl=((b.palette.find(e=>e.id===n.cid)||{}).label||"");
         keep.push(ctx.register(ctx.obj({Type:"Annot",Subtype:"Highlight",Rect:[x0,y0,x1,y1],QuadPoints:quads,C:rgb,F:4,
-          Contents:PDFHexString.fromText(plain(n.html)),T:PDFHexString.fromText(n.author||"Noman's PDF Reader"),MarginId:PDFString.of(n.id),...(lbl?{Subj:PDFHexString.fromText(lbl)}:{})})));
+          Contents:PDFHexString.fromText(plainImg(n.html)),T:PDFHexString.fromText(n.author||"Noman's PDF Reader"),MarginId:PDFString.of(n.id),...(lbl?{Subj:PDFHexString.fromText(lbl)}:{})})));
       });
       {const nt=b.nb[i+1]?nbPlain(b.nb[i+1]):"";
         if(nt)keep.push(ctx.register(ctx.obj({Type:"Annot",Subtype:"Text",Name:"Note",Rect:[ox+W-34,oy+H-34,ox+W-12,oy+H-12],C:[0.23,0.29,0.85],F:4,Open:false,
