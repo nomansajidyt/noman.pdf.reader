@@ -361,7 +361,7 @@ html.tx *,html.tx *:before,html.tx *:after{transition:background-color .35s ease
         <button id="pgmode"><b>◐</b></button>
         <button id="who" title="Student name shown on your notes"></button>
         <button id="theme" title="Light / dark" data-ic="moon"></button>
-        <button id="savepdf" class="go" title="Save notes into the PDF (also autosaves 2 minutes after a change)">Save PDF</button>
+        <button id="savepdf" class="go" title="Save notes into the PDF (also autosaves 5 minutes after a change)">Save PDF</button>
       </div>
     </div>
     <div id="btabs"></div>
@@ -408,13 +408,13 @@ let dpr=devicePixelRatio||1;
 
 const toast=m=>{const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display="none",2800)};
 const setDirty=(v=true)=>{dirty=v;$("#savepdf").classList.toggle("dirty",v);if(active)active.dirty=v;tabDots();if(v&&active)armAuto(active)};
-/* autosave: 2 minutes after the first unsaved change, for books opened with the Open button (they have a writable file handle) */
+/* autosave: 5 minutes after the first unsaved change, for books opened with the Open button (they have a writable file handle) */
 /* AutoSave flag in the top bar: On / Off / needs permission / this book has no file to save into */
 function autoState(b){return !b?"none":!b.handle?"nofile":autoPref===false?"off":b.perm!=="granted"?"perm":"on"}
 function updateAuto(){
   const el=$("#autosv");if(!el)return;
   const st=autoState(active),T={
-    on:"AutoSave is on: changes are saved into the PDF 2 minutes after you make them. Click to turn it off.",
+    on:"AutoSave is on: changes are saved into the PDF 5 minutes after you make them. Click to turn it off.",
     off:"AutoSave is off. Click to turn it on.",
     perm:"AutoSave needs permission to write to this file. Click to allow.",
     nofile:"AutoSave is off for this book. Click to see how to turn it on.",
@@ -455,7 +455,7 @@ $("#autosv").onclick=()=>{
 };
 document.addEventListener("mousedown",e=>{if(!e.target.closest("#autoPop,#autosv"))$("#autoPop").style.display="none"});
 {const _rt=renderTabs;renderTabs=function(...a){const r=_rt.apply(this,a);updateAuto();updateNbBtn();return r}}
-const AUTO_MS=120000;let lastAct=0;
+const AUTO_MS=300000;let lastAct=0;
 document.addEventListener("input",()=>{lastAct=Date.now()},true);
 var autoPref=true;try{autoPref=localStorage.autosave!=="0"}catch(e){}
 function armAuto(b){
