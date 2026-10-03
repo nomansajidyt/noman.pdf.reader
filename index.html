@@ -97,7 +97,7 @@ svg{display:block}
 .ntb button:hover{background:var(--hover)}
 .ntb i{width:14px;height:14px;border-radius:50%;display:block}
 .ed,.nv{font:17px/1.55 var(--serif);min-height:64px;flex:1 1 auto;overflow:auto;word-break:break-word;overflow-wrap:anywhere;text-align:left}
-#note>.nh,#note>.by,#note>.nq,#note>.ntb,#note>.nf{flex:none}
+#note>.nh,#note>.by,#note>.nq,#note>.fbar,#note>.nf{flex:none}
 #note .nf{padding-right:10px}
 .ed{outline:0;border:1.5px solid var(--acc);border-radius:10px;padding:9px 11px;background:var(--desk)}
 .ed:empty:before{content:"Write your note…";color:var(--mute)}
@@ -229,11 +229,15 @@ html[data-theme=dark]{--nbpaper:#1f2233;--nbline:#2d3250;--nbink:#e8eaf6;--nbmar
 .ned h3{margin:0;font-size:calc(var(--z)*16px);line-height:calc(var(--z)*24px)}
 .ned a{color:var(--acc)}.ned code{font-size:.9em;background:var(--hover);border-radius:4px;padding:0 .25em}
 #nbtool{position:absolute;z-index:22;bottom:16px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:2px;padding:5px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh);max-width:96%;flex-wrap:wrap;justify-content:center}
-#nbtool button,#nbtool .cw{border:0;background:none;border-radius:8px;min-width:32px;height:32px;padding:0 8px;color:var(--ink);display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;font-size:13px}
-#nbtool button:hover,#nbtool .cw:hover{background:var(--hover)}
-#nbtool .sp{width:1px;height:20px;background:var(--line);margin:0 4px}
-#nbtool .cw input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-#nbtool .cw i{position:absolute;left:8px;right:8px;bottom:5px;height:3px;border-radius:2px}
+.fbar button,.fbar .cw{border:0;background:none;border-radius:8px;min-width:32px;height:32px;padding:0 8px;color:var(--ink);display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;font-size:13px}
+.fbar button:hover,.fbar .cw:hover{background:var(--hover)}
+.fbar .sp{width:1px;height:20px;background:var(--line);margin:0 4px}
+.fbar .cw input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.fbar .cw i{position:absolute;left:8px;right:8px;bottom:5px;height:3px;border-radius:2px}
+.fbar.inpop{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:2px;margin-bottom:8px;padding:4px;background:var(--hover);border-radius:10px}
+.fbar.inpop button:hover,.fbar.inpop .cw:hover{background:var(--line)}
+@media(pointer:coarse){.fbar button,.fbar .cw{min-width:38px;height:38px}}
+.ed a,.nv a{color:var(--acc)}.ed code,.nv code{font-size:.9em;background:var(--hover);border-radius:4px;padding:0 .25em}
 #nbtgl.on{background:var(--hover)!important;color:var(--acc)}
 @media(max-width:1300px){#nbtgl .nbl{display:none}}
 @media(max-width:700px){#nbtgl,#nbtool{display:none!important}}
@@ -355,14 +359,14 @@ html.tx *,html.tx *:before,html.tx *:after{transition:background-color .35s ease
       <input id="whoIn" maxlength="40" placeholder="e.g. Ayesha Khan" autocomplete="off"><button id="whoSave">Save name</button><div style="clear:both"></div></div>
     <div id="lbar"><i></i></div>
     <div id="autoPop"></div>
-    <div id="nbtool">
+    <div id="nbtool" class="fbar">
       <button data-c="bold" title="Bold (Ctrl+B)"><b>B</b></button><button data-c="italic" title="Italic (Ctrl+I)"><i>I</i></button><button data-c="underline" title="Underline (Ctrl+U)"><u>U</u></button><button data-c="strikeThrough" title="Strikethrough"><s>S</s></button>
       <span class="sp"></span>
       <button data-c="insertUnorderedList" title="Bullet list (or type - then space)">• List</button><button data-c="insertOrderedList" title="Numbered list (or type 1. then space)">1. List</button><button data-c="outdent" title="Outdent (Shift+Tab)">⇤</button><button data-c="indent" title="Indent (Tab)">⇥</button>
       <span class="sp"></span>
       <button data-c="formatBlock" data-a="H3" title="Heading">H</button>
-      <label class="cw" title="Text colour">A<i id="nbci" style="background:#c0392b"></i><input type="color" id="nbc" value="#c0392b"></label>
-      <label class="cw" title="Highlight colour">▮<i id="nbhi" style="background:#ffe14d"></i><input type="color" id="nbh" value="#ffe14d"></label>
+      <label class="cw" title="Text colour">A<i style="background:#c0392b"></i><input type="color" data-k="foreColor" value="#c0392b"></label>
+      <label class="cw" title="Highlight colour">▮<i style="background:#ffe14d"></i><input type="color" data-k="hiliteColor" value="#ffe14d"></label>
       <button data-c="removeFormat" title="Clear formatting">Clear</button>
     </div>
     <div id="viewer" tabindex="0"><div id="stage">
@@ -971,20 +975,23 @@ function nbKeys(e){
     document.execCommand(/\d/.test(pre)?"insertOrderedList":"insertUnorderedList");
   }
 }
-/* formatting bar: appears while a notebook page is being edited */
+/* formatting bar: ONE definition (#nbtool). It floats under the notebook page, and an identical copy sits inside the note window */
+const EDS=".ned,.ed";let fmtRng=null;
+document.addEventListener("selectionchange",()=>{const s=getSelection();if(!s.rangeCount||!s.anchorNode)return;const el=s.anchorNode.nodeType===1?s.anchorNode:s.anchorNode.parentElement;if(el&&el.closest(EDS))fmtRng=s.getRangeAt(0).cloneRange()});
+function fmtTouch(){const a=document.activeElement,ed=a&&a.closest&&a.closest(EDS);if(ed&&ed.oninput)ed.oninput()}
+function wireFmt(T){
+  T.querySelectorAll("button[data-c]").forEach(b=>{b.onmousedown=e=>e.preventDefault();b.onclick=()=>{document.execCommand(b.dataset.c,false,b.dataset.a||null);fmtTouch()}});
+  T.querySelectorAll(".cw input").forEach(inp=>{inp.oninput=e=>{
+    const v=e.target.value;inp.previousElementSibling.style.background=v;
+    if(fmtRng){const ed=(fmtRng.startContainer.nodeType===1?fmtRng.startContainer:fmtRng.startContainer.parentElement).closest(EDS);if(ed){ed.focus();const s=getSelection();s.removeAllRanges();s.addRange(fmtRng)}}
+    document.execCommand(inp.dataset.k,false,v);fmtTouch()}});
+}
+const newFmtBar=()=>{const t=$("#nbtool").cloneNode(true);t.removeAttribute("id");t.removeAttribute("style");t.classList.add("inpop");wireFmt(t);return t};
 {
-  const T=$("#nbtool");let rng=null,hideT=0;
-  const touch=()=>{const a=document.activeElement,ed=a&&a.closest&&a.closest(".ned");if(ed&&ed.oninput)ed.oninput()};
+  const T=$("#nbtool");let hideT=0;wireFmt(T);
   document.addEventListener("focusin",e=>{if(e.target.closest&&e.target.closest(".ned")&&nbOn()){clearTimeout(hideT);T.style.display="flex"}});
   document.addEventListener("focusout",e=>{if(!e.target.closest||!e.target.closest(".ned"))return;
     hideT=setTimeout(()=>{const a=document.activeElement;if(!(a&&a.closest&&(a.closest(".ned")||a.closest("#nbtool"))))T.style.display="none"},160)});
-  document.addEventListener("selectionchange",()=>{const s=getSelection();if(!s.rangeCount||!s.anchorNode)return;const el=s.anchorNode.nodeType===1?s.anchorNode:s.anchorNode.parentElement;if(el&&el.closest(".ned"))rng=s.getRangeAt(0).cloneRange()});
-  T.querySelectorAll("button").forEach(b=>{b.onmousedown=e=>e.preventDefault();b.onclick=()=>{document.execCommand(b.dataset.c,false,b.dataset.a||null);touch()}});
-  const colour=(id,ind,cmd)=>{$(id).oninput=e=>{
-    const v=e.target.value;$(ind).style.background=v;
-    if(rng){const ed=(rng.startContainer.nodeType===1?rng.startContainer:rng.startContainer.parentElement).closest(".ned");if(ed){ed.focus();const s=getSelection();s.removeAllRanges();s.addRange(rng)}}
-    document.execCommand(cmd,false,v);touch()}};
-  colour("#nbc","#nbci","foreColor");colour("#nbh","#nbhi","hiliteColor");
 }
 updateNbBtn();
 
@@ -1217,12 +1224,9 @@ function renderPop(n){
   const q=mk("div","nq");q.textContent="“"+(n.text.length>140?n.text.slice(0,140)+"…":n.text)+"”";
   const foot=mk("div","nf");let body;
   if(n.editing){
-    const tb=mk("div","ntb");
-    [["bold","<b>B</b>"],["italic","<i>I</i>"],["underline","<u>U</u>"],["insertUnorderedList","•"],["insertOrderedList","1."],["formatBlock","H",["H3"]]].forEach(([c,l,a])=>{
-      const b=mk("button","",l);b.onmousedown=e=>e.preventDefault();b.onclick=()=>document.execCommand(c,false,a?a[0]:null);tb.append(b)});
-    ["#d33b3b","#2f6fe4","#1f9d55"].forEach(c=>{const b=mk("button","",`<i style="background:${c}"></i>`);b.onmousedown=e=>e.preventDefault();b.onclick=()=>document.execCommand("foreColor",false,c);tb.append(b)});
+    const tb=newFmtBar();
     body=mk("div","ed");body.contentEditable="true";body.innerHTML=n.html;
-    body.oninput=()=>{n.html=body.innerHTML;setDirty()};
+    body.oninput=()=>{n.html=body.innerHTML;setDirty()};body.onkeydown=nbKeys;   /* no onpaste here: the note window pastes natively (as in v26), so complex Word content keeps its formatting */
     const s=mk("button","","Save the note");
     s.onclick=()=>{n.editing=false;if(!plain(n.html))n.html="";if(!n.author&&student){n.author=student;n.date=n.date||Date.now()}setDirty();renderPop(n);refreshList();toast("Note saved. Press Save PDF to keep it in the file.")};
     foot.append(s);pop.append(h,dots,by,q,tb,body,foot);setTimeout(()=>body.focus(),0);
