@@ -214,6 +214,29 @@ html[data-dev=laptop] #note{width:min(1030px,calc(100vw - var(--dw) - 64px));hei
 .apb{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}.apb button{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:7px 14px;font-weight:600}.apb button.pri{background:var(--acc);color:var(--on);border-color:transparent}
 @media(max-width:1100px){.aspill .al,.aspill b{display:none}.aspill{padding:0 6px!important}}
 @media(max-width:700px){#autosv{display:none!important}}
+/* ---- notebook page beside every PDF page ---- */
+:root{--nbpaper:#fffdf7;--nbline:#dfe3f1;--nbink:#1b1f33;--nbmargin:#f1b9b9;--nbhole:#c6cbe0}
+html[data-theme=dark]{--nbpaper:#1f2233;--nbline:#2d3250;--nbink:#e8eaf6;--nbmargin:#5b3142;--nbhole:#3a3f5f}
+#pages{--z:1.3}
+.nb{position:absolute;left:calc(100% + 18px);top:0;width:calc(100% * .85);height:100%;display:flex;flex-direction:column;background:var(--nbpaper);border-radius:3px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.18),0 12px 40px rgba(10,15,40,.2);color:var(--nbink)}
+.nb:before{content:"";position:absolute;left:0;top:0;bottom:0;width:calc(var(--z)*15px);background:radial-gradient(circle at 50% 50%,var(--nbhole) 0 27%,transparent 30%) 0 0/100% calc(var(--z)*36px) repeat-y;pointer-events:none}
+.nb:after{content:"";position:absolute;left:calc(var(--z)*31px);top:calc(var(--z)*38px);bottom:0;width:1px;background:var(--nbmargin);pointer-events:none}
+.nbh{display:flex;justify-content:space-between;align-items:baseline;padding:calc(var(--z)*14px) calc(var(--z)*20px) calc(var(--z)*8px) calc(var(--z)*38px);color:var(--mute);font:600 calc(var(--z)*10px)/1 var(--ui);letter-spacing:.09em;text-transform:uppercase;border-bottom:1px solid var(--nbline);flex:none}
+.nbh span{color:var(--acc)}
+.ned{position:relative;flex:1;min-height:0;overflow:auto;outline:0;padding:0 calc(var(--z)*20px) calc(var(--z)*14px) calc(var(--z)*38px);font:calc(var(--z)*14px)/calc(var(--z)*24px) var(--serif);color:var(--nbink);background:repeating-linear-gradient(transparent 0 calc(var(--z)*24px - 1px),var(--nbline) calc(var(--z)*24px - 1px) calc(var(--z)*24px));background-attachment:local;overflow-wrap:anywhere}
+.ned[data-empty="1"]:before{content:attr(data-ph);position:absolute;left:calc(var(--z)*38px);right:calc(var(--z)*20px);color:var(--mute);pointer-events:none;font-style:italic}
+.ned p,.ned div{margin:0}.ned ul,.ned ol{margin:0;padding-left:calc(var(--z)*22px)}.ned li{margin:0}
+.ned h3{margin:0;font-size:calc(var(--z)*16px);line-height:calc(var(--z)*24px)}
+.ned a{color:var(--acc)}.ned code{font-size:.9em;background:var(--hover);border-radius:4px;padding:0 .25em}
+#nbtool{position:absolute;z-index:22;bottom:16px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:2px;padding:5px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh);max-width:96%;flex-wrap:wrap;justify-content:center}
+#nbtool button,#nbtool .cw{border:0;background:none;border-radius:8px;min-width:32px;height:32px;padding:0 8px;color:var(--ink);display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;font-size:13px}
+#nbtool button:hover,#nbtool .cw:hover{background:var(--hover)}
+#nbtool .sp{width:1px;height:20px;background:var(--line);margin:0 4px}
+#nbtool .cw input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+#nbtool .cw i{position:absolute;left:8px;right:8px;bottom:5px;height:3px;border-radius:2px}
+#nbtgl.on{background:var(--hover)!important;color:var(--acc)}
+@media(max-width:1300px){#nbtgl .nbl{display:none}}
+@media(max-width:700px){#nbtgl,#nbtool{display:none!important}}
 </style>
 </head>
 <body>
@@ -241,6 +264,7 @@ html[data-dev=laptop] #note{width:min(1030px,calc(100vw - var(--dw) - 64px));hei
         <button id="zout" title="Zoom out" data-ic="minus"></button><span id="zl">130%</span><button id="zin" title="Zoom in" data-ic="plus"></button>
       </div>
       <div class="grp r">
+        <button id="nbtgl" title="Notebook page beside every PDF page" aria-pressed="false"></button>
         <button id="autosv" class="aspill" role="switch" aria-checked="false" data-st="none" disabled><span class="al">AutoSave</span><i class="sw"><i></i></i><b>Off</b></button>
         <button id="boost"><b>Aa</b></button>
         <button id="pgmode"><b>◐</b></button>
@@ -253,6 +277,16 @@ html[data-dev=laptop] #note{width:min(1030px,calc(100vw - var(--dw) - 64px));hei
     <div id="whoBox"><label for="whoIn">Student name</label><p>Added to every note you create, so others can see who wrote it.</p>
       <input id="whoIn" maxlength="40" placeholder="e.g. Ayesha Khan" autocomplete="off"><button id="whoSave">Save name</button><div style="clear:both"></div></div>
     <div id="autoPop"></div>
+    <div id="nbtool">
+      <button data-c="bold" title="Bold (Ctrl+B)"><b>B</b></button><button data-c="italic" title="Italic (Ctrl+I)"><i>I</i></button><button data-c="underline" title="Underline (Ctrl+U)"><u>U</u></button><button data-c="strikeThrough" title="Strikethrough"><s>S</s></button>
+      <span class="sp"></span>
+      <button data-c="insertUnorderedList" title="Bullet list (or type - then space)">• List</button><button data-c="insertOrderedList" title="Numbered list (or type 1. then space)">1. List</button><button data-c="outdent" title="Outdent (Shift+Tab)">⇤</button><button data-c="indent" title="Indent (Tab)">⇥</button>
+      <span class="sp"></span>
+      <button data-c="formatBlock" data-a="H3" title="Heading">H</button>
+      <label class="cw" title="Text colour">A<i id="nbci" style="background:#c0392b"></i><input type="color" id="nbc" value="#c0392b"></label>
+      <label class="cw" title="Highlight colour">▮<i id="nbhi" style="background:#ffe14d"></i><input type="color" id="nbh" value="#ffe14d"></label>
+      <button data-c="removeFormat" title="Clear formatting">Clear</button>
+    </div>
     <div id="viewer" tabindex="0"><div id="stage">
       <div id="empty"><svg class="elogo" viewBox="0 0 48 48" width="56" height="56"><rect width="48" height="48" rx="12" fill="#3a4bd8"/><path d="M14 9h14l8 8v22a2 2 0 0 1-2 2H14a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2z" fill="#fff"/><path d="M28 9l8 8h-6a2 2 0 0 1-2-2z" fill="#3a4bd8" fill-opacity=".3"/><rect x="17" y="21" width="12" height="2.6" rx="1.3" fill="#3a4bd8" fill-opacity=".45"/><rect x="15.5" y="26" width="19" height="6.4" rx="2.2" fill="#3a4bd8" fill-opacity=".22"/><rect x="17.5" y="27.9" width="14" height="2.6" rx="1.3" fill="#3a4bd8"/><rect x="17" y="35.5" width="9" height="2.6" rx="1.3" fill="#3a4bd8" fill-opacity=".45"/></svg><h2>Read it. Mark it. Keep it in the file.</h2><p>Highlights and notes are saved inside your PDF, so they come back whenever you reopen it here.</p><button id="open2">Open a PDF</button></div>
       <div id="pages"></div>
@@ -270,6 +304,7 @@ html[data-dev=laptop] #note{width:min(1030px,calc(100vw - var(--dw) - 64px));hei
 const $=s=>document.querySelector(s);
 const WORKER="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 const IC={menu:'<path d="M4 6h16M4 12h10M4 18h16"/>',left:'<path d="M15 5l-7 7 7 7"/>',right:'<path d="M9 5l7 7-7 7"/>',minus:'<path d="M5 12h14"/>',plus:'<path d="M12 5v14M5 12h14"/>',moon:'<path d="M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z"/>',trash:'<path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',open:'<path d="M3 7h6l2 2h10v10H3z"/>',user:'<path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 20c1-4 4-6 8-6s7 2 8 6"/>'};
+IC.nb='<path d="M6 3h12a1 1 0 011 1v16a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1zM9 3v18M12.5 8h3.5M12.5 12h3.5"/>';
 IC.gear='<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>';
 const svg=k=>`<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${IC[k]}</svg>`;
 document.querySelectorAll("[data-ic]").forEach(b=>b.innerHTML=svg(b.dataset.ic));
@@ -326,7 +361,7 @@ $("#autosv").onclick=()=>{
   if(autoPref)books.forEach(x=>{if(x.dirty)armAuto(x)});
 };
 document.addEventListener("mousedown",e=>{if(!e.target.closest("#autoPop,#autosv"))$("#autoPop").style.display="none"});
-{const _rt=renderTabs;renderTabs=function(...a){const r=_rt.apply(this,a);updateAuto();return r}}
+{const _rt=renderTabs;renderTabs=function(...a){const r=_rt.apply(this,a);updateAuto();updateNbBtn();return r}}
 const AUTO_MS=120000;let lastAct=0;
 document.addEventListener("input",()=>{lastAct=Date.now()},true);
 var autoPref=true;try{autoPref=localStorage.autosave!=="0"}catch(e){}
@@ -422,13 +457,13 @@ addEventListener("drop",e=>{
 async function readNotes(b){
   try{const doc=await PDFLib.PDFDocument.load(b,{ignoreEncryption:true,updateMetadata:false});
     const s=doc.catalog.lookup(PDFLib.PDFName.of("MarginNotes"));
-    if(s&&s.asString){const j=JSON.parse(decodeURIComponent(escape(atob(s.asString()))));return Array.isArray(j)?{notes:j,palette:null}:{notes:j.notes||[],palette:j.palette||null}}
+    if(s&&s.asString){const j=JSON.parse(decodeURIComponent(escape(atob(s.asString()))));return Array.isArray(j)?{notes:j,palette:null,nb:{}}:{notes:j.notes||[],palette:j.palette||null,nb:j.nb||{}}}
   }catch(e){console.warn("No embedded notes",e)}
-  return {notes:[],palette:null};
+  return {notes:[],palette:null,nb:{}};
 }
 /* books (application tabs) */
 let books=[],active=null,mru=[],bid=0;
-const snapOf=(n,p)=>JSON.stringify({n:n.map(({editing,...x})=>x),p});
+const snapOf=(n,p,nb)=>JSON.stringify({n:n.map(({editing,...x})=>x),p,nb:nb||{}});
 const touch=b=>{mru=[b,...mru.filter(x=>x!==b)]};
 function stash(){if(!active)return;Object.assign(active,{pdf,bytes,handle,fname,scale,notes,cur,dirty});if(active.ready!==false)active.scroll=$("#viewer").scrollTop}
 function renderTabs(){
@@ -459,7 +494,7 @@ async function load(f,h=null){
   const meta=await readNotes(by),nts=meta.notes,pal=meta.palette&&meta.palette.length?meta.palette:defPalette();
   nts.forEach(n=>{n.editing=false;if(!n.cid){const e=pal.find(x=>x.color.toLowerCase()===String(n.color||"").toLowerCase());if(e)n.cid=e.id}});
   const w1=(await doc.getPage(1)).getViewport({scale:1}).width;
-  const b={id:++bid,pdf:doc,bytes:by,handle:h,fname:f.name,scale:autoScale(w1),notes:nts,palette:pal,cur:1,dirty:false,scroll:0,snap:snapOf(nts,pal),diskSize:f.size,perm:"prompt"};
+  const b={id:++bid,pdf:doc,bytes:by,handle:h,fname:f.name,scale:autoScale(w1),notes:nts,palette:pal,nb:meta.nb||{},cur:1,dirty:false,scroll:0,snap:snapOf(nts,pal,meta.nb||{}),diskSize:f.size,perm:"prompt"};
   books.push(b);if(h)h.queryPermission({mode:"readwrite"}).then(r=>{b.perm=r;updateAuto()}).catch(()=>{});await activate(b);
   toast(nts.length?`Loaded ${nts.length} note${nts.length>1?"s":""} from the PDF`:"No saved notes in this PDF yet");
 }
@@ -480,8 +515,8 @@ async function closeBook(b){
 }
 $("#closebk").onclick=()=>active&&closeBook(active);
 function discard(b){
-  {const sv=JSON.parse(b.snap);b.notes=sv.n;b.palette=sv.p}b.dirty=false;
-  if(b===active){notes=b.notes;act=null;$("#note").style.display="none";setDirty(false);document.querySelectorAll(".page").forEach(drawHL);refreshList();renderSel()}
+  {const sv=JSON.parse(b.snap);b.notes=sv.n;b.palette=sv.p;b.nb=sv.nb||{}}b.dirty=false;
+  if(b===active){notes=b.notes;act=null;$("#note").style.display="none";setDirty(false);document.querySelectorAll(".page").forEach(drawHL);nbRefresh();refreshList();renderSel()}
   renderTabs();
 }
 /* "save / discard" dialog: per-book choice, or save all / discard all. Resolves false if cancelled. */
@@ -535,7 +570,7 @@ $("#app").classList.toggle("open",!matchMedia("(max-width:900px)").matches);
 $("#scrim").onclick=()=>$("#app").classList.remove("open");
 /* pick a page scale that suits the screen unless the reader has zoomed by hand */
 function autoScale(w){
-  const d=document.documentElement.dataset.dev,av=$("#viewer").clientWidth||innerWidth,pad=d==="phone"?12:d==="tablet"?36:60,fit=(av-pad)/w;
+  const d=document.documentElement.dataset.dev,av=$("#viewer").clientWidth||innerWidth,pad=d==="phone"?12:d==="tablet"?36:60,fit=nbOn()?(av-pad-NBG)/(w*(1+NBR)):(av-pad)/w;
   return Math.max(.3,Math.min(4,d==="tv"?Math.min(2.4,fit):d==="laptop"?Math.min(1.3,fit):fit));
 }
 let rzT=0;
@@ -624,7 +659,7 @@ async function scrollToPage(n,y=0,gap=28){await ensureDims(n);const el=pageEl(n)
 let dims={},seen={},gen=0,io2=null;
 /* size pages in whole device pixels so the canvas is never resampled (that is what made text soft) */
 function snap(w,h){const W=Math.max(1,Math.round(w*scale*dpr)),rs=W/w;return{W,H:Math.round(h*rs),rs}}
-function fit(el){const d=dims[el.dataset.p]||dims[1];if(d){const z=snap(d[0],d[1]);el.style.width=z.W/dpr+"px";el.style.height=z.H/dpr+"px"}}
+function fit(el){const d=dims[el.dataset.p]||dims[1];if(d){const z=snap(d[0],d[1]);el.style.width=z.W/dpr+"px";el.style.height=z.H/dpr+"px";if(el.dataset.p==="1")nbLayout(z.W/dpr)}}
 async function measure(i){
   if(seen[i])return;seen[i]=1;const g=gen;
   const v=(await pdf.getPage(i)).getViewport({scale:1});if(g!==gen)return;
@@ -645,7 +680,7 @@ async function draw(d){
   const cw=sz.W/dpr+"px",ch=sz.H/dpr+"px";d.style.width=cw;d.style.height=ch;
   const c=mk("canvas");c.width=sz.W;c.height=sz.H;c.style.width=cw;c.style.height=ch;d.appendChild(c);
   d.appendChild(mk("div","hl"));const tl=mk("div","textLayer");d.appendChild(tl);
-  drawHL(d);
+  addNb(d);drawHL(d);
   await p.render({canvasContext:c.getContext("2d",{alpha:false}),viewport:p.getViewport({scale:sz.rs}),background:"#ffffff",annotationMode:0}).promise;
   if(g!==gen)return;darken(c);
   const tc=await p.getTextContent();if(g!==gen)return;tl.style.setProperty("--scale-factor",vp.scale);const tds=[],task=pdfjsLib.renderTextLayer({textContentSource:tc,container:tl,viewport:vp,textDivs:tds});
@@ -685,6 +720,143 @@ addEventListener("keydown",e=>{
 });
 
 /* select text → pick a colour → highlight */
+
+/* ================= Notebook pages ================= */
+/*NBPURE-START*/
+const nbBlank=h=>!/<li|<img|<table/i.test(h)&&!plain(h);
+function nbLum(c){
+  c=String(c||"").trim().toLowerCase();let r,g,b,m;
+  if(m=c.match(/^#([0-9a-f]{3})$/)){const h=m[1];r=parseInt(h[0]+h[0],16);g=parseInt(h[1]+h[1],16);b=parseInt(h[2]+h[2],16)}
+  else if(m=c.match(/^#([0-9a-f]{6})/)){r=parseInt(m[1].slice(0,2),16);g=parseInt(m[1].slice(2,4),16);b=parseInt(m[1].slice(4,6),16)}
+  else if(m=c.match(/^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/)){r=+m[1];g=+m[2];b=+m[3]}
+  else if(c==="black")return 0;else if(c==="white")return 1;else return null;
+  return (0.299*r+0.587*g+0.114*b)/255;
+}
+const nbColorOK=c=>/^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%\/]+\)|[a-z]{3,20})$/i.test(c)&&!/^(windowtext|inherit|initial|unset|transparent|currentcolor|auto|window|buttontext)$/i.test(c);
+/* rich paste: keeps bold/italic/underline/strike, sub/superscript, lists (Word and Google Docs too), headings, links, text and highlight colour; drops everything else */
+function nbSanitize(html){
+  const doc=new DOMParser().parseFromString(html,"text/html");
+  doc.querySelectorAll("style,script,meta,link,title,xml,o\\:p,img,svg,canvas,iframe,object,head").forEach(x=>x.remove());
+  doc.querySelectorAll("p").forEach(p=>{   /* Word lists are styled paragraphs: turn them into real lists */
+    if(!/mso-list/i.test(p.getAttribute("style")||""))return;
+    const m=p.querySelector('[style*="mso-list:Ignore"],[style*="mso-list: Ignore"]');
+    const ord=!!m&&/^\s*(\d+|[A-Za-z]|[ivxIVX]+)[.)]/.test(m.textContent);
+    if(m)m.remove();
+    const li=doc.createElement("li");li.dataset.ord=ord?"1":"";while(p.firstChild)li.appendChild(p.firstChild);p.replaceWith(li);
+  });
+  doc.body.querySelectorAll("li[data-ord]").forEach(li=>{
+    const par=li.parentElement;if(/^(UL|OL)$/.test(par.tagName))return;
+    const tag=li.dataset.ord?"ol":"ul",prev=li.previousElementSibling;
+    if(prev&&prev.dataset&&prev.dataset.w===tag)prev.appendChild(li);
+    else{const w=doc.createElement(tag);w.dataset.w=tag;par.insertBefore(w,li);w.appendChild(li)}
+  });
+  const esc=t=>t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const OK={B:"b",STRONG:"b",I:"i",EM:"i",U:"u",S:"s",STRIKE:"s",DEL:"s",SUB:"sub",SUP:"sup",UL:"ul",OL:"ol",LI:"li",BR:"br",P:"p",DIV:"p",BLOCKQUOTE:"p",PRE:"p",H1:"h3",H2:"h3",H3:"h3",H4:"h3",H5:"h3",H6:"h3",CODE:"code",TR:"p",TH:"b"};
+  const walk=n=>{
+    if(n.nodeType===3)return esc(n.nodeValue.replace(/\s+/g," "));
+    if(n.nodeType!==1)return "";
+    let tag=OK[n.tagName];const st=n.style||{},fw=st.fontWeight;
+    if(tag==="br")return "<br>";
+    if(tag==="b"&&(fw==="normal"||(fw&&+fw<600)))tag="";   /* Google Docs wraps everything in <b style="font-weight:normal"> */
+    let inner=[...n.childNodes].map(walk).join("");
+    if(n.tagName==="TD")inner+=" ";
+    const fs=st.fontStyle,td=(st.textDecorationLine||st.textDecoration||""),va=st.verticalAlign;
+    if(tag!=="b"&&(fw==="bold"||+fw>=600))inner=`<b>${inner}</b>`;
+    if(tag!=="i"&&fs==="italic")inner=`<i>${inner}</i>`;
+    if(tag!=="u"&&/underline/.test(td)&&n.tagName!=="A")inner=`<u>${inner}</u>`;
+    if(tag!=="s"&&/line-through/.test(td))inner=`<s>${inner}</s>`;
+    if(tag!=="sup"&&va==="super")inner=`<sup>${inner}</sup>`;
+    if(tag!=="sub"&&va==="sub")inner=`<sub>${inner}</sub>`;
+    let css="";const col=st.color,bg=st.backgroundColor;
+    if(col&&nbColorOK(col)){const l=nbLum(col);if(l===null||(l>0.12&&l<0.92))css+=`color:${col};`}
+    if(bg&&nbColorOK(bg)){const l=nbLum(bg);if(l===null||l<0.92)css+=`background-color:${bg};`}
+    if(css&&inner.trim())inner=`<span style="${css}">${inner}</span>`;
+    if(n.tagName==="A"){const h=n.getAttribute("href")||"";return /^(https?:|mailto:)/i.test(h)?`<a href="${esc(h).replace(/"/g,"&quot;")}" target="_blank" rel="noopener">${inner}</a>`:inner}
+    return tag?`<${tag}>${inner}</${tag}>`:inner;
+  };
+  return walk(doc.body).replace(/<p>(\s|&nbsp;)*<\/p>/g,"");
+}
+/* plain-text copy of a notebook page (written into the PDF as a sticky note so other PDF readers can show it) */
+function nbPlain(html){
+  const d=document.createElement("div");d.innerHTML=html;
+  d.querySelectorAll("li").forEach(li=>{const ol=li.parentElement&&li.parentElement.tagName==="OL",i=[...li.parentElement.children].indexOf(li)+1;li.insertBefore(document.createTextNode((ol?i+". ":"• ")),li.firstChild)});
+  d.querySelectorAll("p,div,li,h1,h2,h3,tr").forEach(e=>e.insertAdjacentText("afterend","\n"));
+  d.querySelectorAll("br").forEach(e=>e.replaceWith("\n"));
+  return d.textContent.replace(/\u00a0/g," ").replace(/\n{3,}/g,"\n\n").trim();
+}
+/*NBPURE-END*/
+var nbPref=null;try{const v=localStorage.nb;nbPref=v==="1"?true:v==="0"?false:null}catch(e){}
+const NBR=.85,NBG=18;
+const nbOn=()=>{const d=document.documentElement.dataset.dev;if(d==="phone")return false;return nbPref===null?(d==="laptop"||d==="tv"):nbPref};
+function nbLayout(pw){
+  const P=$("#pages");P.style.setProperty("--z",scale);
+  P.style.paddingRight=nbOn()?(pw*NBR+NBG)+"px":"";
+}
+function updateNbBtn(){const b=$("#nbtgl");if(!b)return;const on=nbOn();b.classList.toggle("on",on);b.setAttribute("aria-pressed",on)}
+$("#nbtgl").innerHTML=svg("nb")+'<span class="nbl">Notebook</span>';
+$("#nbtgl").onclick=()=>{
+  nbPref=!nbOn();try{localStorage.nb=nbPref?"1":"0"}catch(e){}updateNbBtn();
+  if(!pdf)return;
+  const ns=active&&active.uz?scale:autoScale(dims[1][0]);
+  if(Math.abs(ns/scale-1)>.01)zoom(ns/scale,true);
+  else{document.querySelectorAll(".page").forEach(fit);rerender()}
+  toast(nbOn()?"Notebook pages on":"Notebook pages off (your notes are kept)");
+};
+function nbRefresh(){document.querySelectorAll(".nb .ned").forEach(ed=>{const h=(active&&active.nb[ed.closest(".page").dataset.p])||"";ed.innerHTML=h;ed.dataset.empty=h?"":"1"})}
+function addNb(el){
+  if(!nbOn()||!active)return;
+  const pn=el.dataset.p,b=active;
+  const nb=mk("div","nb");nb.innerHTML='<div class="nbh"><b>Notebook</b><span></span></div>';
+  nb.querySelector("span").textContent="Page "+pn;
+  const ed=mk("div","ned");ed.contentEditable="true";ed.spellcheck=true;
+  ed.dataset.ph="Your notes for page "+pn+". Type - or 1. and a space to start a list.";
+  const h0=b.nb[pn]||"";ed.innerHTML=h0;ed.dataset.empty=h0?"":"1";
+  ed.oninput=()=>{const h=ed.innerHTML;if(nbBlank(h)){delete b.nb[pn];ed.dataset.empty="1"}else{b.nb[pn]=h;ed.dataset.empty=""}setDirty()};
+  ed.onpaste=nbPaste;ed.onkeydown=nbKeys;
+  nb.append(ed);el.appendChild(nb);
+}
+function nbPaste(e){
+  const cd=e.clipboardData;if(!cd)return;e.preventDefault();
+  const html=cd.getData("text/html"),txt=cd.getData("text/plain");let out="";
+  if(html&&html.length<2000000){try{out=nbSanitize(html)}catch(err){out=""}}
+  if(!out.trim()){out=txt.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\t/g,"    ").replace(/\r?\n/g,"<br>")}
+  document.execCommand("insertHTML",false,out);
+}
+function nbKeys(e){
+  if(e.ctrlKey||e.altKey||e.metaKey)return;
+  const s=getSelection();
+  if(e.key==="Tab"){
+    e.preventDefault();const n=s.anchorNode,el=n&&(n.nodeType===1?n:n.parentElement);
+    if(el&&el.closest("li"))document.execCommand(e.shiftKey?"outdent":"indent");else document.execCommand("insertText",false,"\u00a0\u00a0\u00a0\u00a0");
+    return;
+  }
+  if(e.key===" "&&!e.isComposing&&s.rangeCount&&s.isCollapsed){   /* "- " or "1. " at the start of a line becomes a list */
+    const t=s.anchorNode;if(!t||t.nodeType!==3)return;
+    const pre=t.nodeValue.slice(0,s.anchorOffset);
+    if(!/^(-|\*|•|\d{1,2}[.)])$/.test(pre))return;
+    if(t.previousSibling&&t.previousSibling.nodeName!=="BR")return;
+    e.preventDefault();t.nodeValue=t.nodeValue.slice(s.anchorOffset);
+    const r=document.createRange();r.setStart(t,0);r.collapse(true);s.removeAllRanges();s.addRange(r);
+    document.execCommand(/\d/.test(pre)?"insertOrderedList":"insertUnorderedList");
+  }
+}
+/* formatting bar: appears while a notebook page is being edited */
+{
+  const T=$("#nbtool");let rng=null,hideT=0;
+  const touch=()=>{const a=document.activeElement,ed=a&&a.closest&&a.closest(".ned");if(ed&&ed.oninput)ed.oninput()};
+  document.addEventListener("focusin",e=>{if(e.target.closest&&e.target.closest(".ned")&&nbOn()){clearTimeout(hideT);T.style.display="flex"}});
+  document.addEventListener("focusout",e=>{if(!e.target.closest||!e.target.closest(".ned"))return;
+    hideT=setTimeout(()=>{const a=document.activeElement;if(!(a&&a.closest&&(a.closest(".ned")||a.closest("#nbtool"))))T.style.display="none"},160)});
+  document.addEventListener("selectionchange",()=>{const s=getSelection();if(!s.rangeCount||!s.anchorNode)return;const el=s.anchorNode.nodeType===1?s.anchorNode:s.anchorNode.parentElement;if(el&&el.closest(".ned"))rng=s.getRangeAt(0).cloneRange()});
+  T.querySelectorAll("button").forEach(b=>{b.onmousedown=e=>e.preventDefault();b.onclick=()=>{document.execCommand(b.dataset.c,false,b.dataset.a||null);touch()}});
+  const colour=(id,ind,cmd)=>{$(id).oninput=e=>{
+    const v=e.target.value;$(ind).style.background=v;
+    if(rng){const ed=(rng.startContainer.nodeType===1?rng.startContainer:rng.startContainer.parentElement).closest(".ned");if(ed){ed.focus();const s=getSelection();s.removeAllRanges();s.addRange(rng)}}
+    document.execCommand(cmd,false,v);touch()}};
+  colour("#nbc","#nbci","foreColor");colour("#nbh","#nbhi","hiliteColor");
+}
+updateNbBtn();
+
 /* ---- copying text out of the PDF keeps its formatting (bold, italic, sub/superscript, headings, paragraphs) ---- */
 /*PURE-START*/
 const LIG={"ﬀ":"ff","ﬁ":"fi","ﬂ":"fl","ﬃ":"ffi","ﬄ":"ffl","ﬅ":"st","ﬆ":"st"};
@@ -779,7 +951,7 @@ document.addEventListener("copy",e=>{
 function selCheck(e){
   const s=getSelection(),sel=$("#sel");
   if(!s||s.isCollapsed||!s.toString().trim()){sel.style.display="none";pending=null;if(s&&s.isCollapsed&&e)clickHit(e);return}
-  const r=s.getRangeAt(0),pgEl=r.startContainer.parentElement?.closest(".page");if(!pgEl){sel.style.display="none";return}
+  const r=s.getRangeAt(0),pgEl=r.startContainer.parentElement?.closest(".page");if(!pgEl||r.startContainer.parentElement.closest(".nb")){sel.style.display="none";return}
   const pb=pgEl.getBoundingClientRect(),rects=[];
   for(const q of r.getClientRects()){
     const x1=Math.max(q.left,pb.left),x2=Math.min(q.right,pb.right),y1=Math.max(q.top,pb.top),y2=Math.min(q.bottom,pb.bottom);
@@ -790,14 +962,14 @@ function selCheck(e){
   const last=[...r.getClientRects()].pop();
   sel.style.display="flex";sel.style.left=Math.max(10,Math.min(last.right-60,innerWidth-sel.offsetWidth-10))+"px";sel.style.top=Math.min(last.bottom+8,innerHeight-60)+"px";
 }
-$("#viewer").addEventListener("mouseup",e=>setTimeout(()=>{if(!e.target.closest("#note"))selCheck(e)},10));
+$("#viewer").addEventListener("mouseup",e=>setTimeout(()=>{if(!e.target.closest("#note,.nb"))selCheck(e)},10));
 let selT=0;
 document.addEventListener("selectionchange",()=>{
   if(!coarse())return;clearTimeout(selT);selT=setTimeout(()=>{
     const s=getSelection();if(!s||!s.anchorNode)return;
     const el=s.anchorNode.nodeType===1?s.anchorNode:s.anchorNode.parentElement;
     if(el&&el.closest(".textLayer"))selCheck(null)},350)});
-$("#viewer").addEventListener("click",e=>{if(coarse()&&getSelection().isCollapsed&&!e.target.closest("#note"))clickHit(e)});
+$("#viewer").addEventListener("click",e=>{if(coarse()&&getSelection().isCollapsed&&!e.target.closest("#note,.nb"))clickHit(e)});
 $("#sel").onmousedown=e=>e.preventDefault();
 function renderSel(){
   const sel=$("#sel");sel.innerHTML="";sel.append(mk("span","","Highlight"));
@@ -941,13 +1113,13 @@ async function doSave(b,auto){
     try{if(await b.handle.queryPermission({mode:"readwrite"})!=="granted"){if(!b.autoWarned){b.autoWarned=1;toast("AutoSave is paused. Click the AutoSave switch at the top to allow writing to this file.")}return false}}catch(e){return false}
   }
   if(b===active){if(!auto)closeNote();stash()}
-  const startSnap=snapOf(b.notes,b.palette);
+  const startSnap=snapOf(b.notes,b.palette,b.nb);
   try{
     const {PDFDocument,PDFName,PDFString,PDFHexString,PDFDict}=PDFLib;
     const doc=await PDFDocument.load(b.bytes,{ignoreEncryption:true}),ctx=doc.context;
     doc.getPages().forEach((pg,i)=>{
       const keep=[],old=pg.node.Annots();
-      if(old)for(let k=0;k<old.size();k++){const d=old.lookupMaybe(k,PDFDict);if(!(d&&d.has(PDFName.of("MarginId"))))keep.push(old.get(k))}
+      if(old)for(let k=0;k<old.size();k++){const d=old.lookupMaybe(k,PDFDict);if(!(d&&(d.has(PDFName.of("MarginId"))||d.has(PDFName.of("MarginNb")))))keep.push(old.get(k))}
       const {x:ox,y:oy,width:W,height:H}=pg.getMediaBox();
       b.notes.filter(n=>n.page===i+1).forEach(n=>{
         const quads=[];let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
@@ -959,15 +1131,18 @@ async function doSave(b,auto){
         keep.push(ctx.register(ctx.obj({Type:"Annot",Subtype:"Highlight",Rect:[x0,y0,x1,y1],QuadPoints:quads,C:rgb,F:4,
           Contents:PDFHexString.fromText(plain(n.html)),T:PDFHexString.fromText(n.author||"Noman's PDF Reader"),MarginId:PDFString.of(n.id),...(lbl?{Subj:PDFHexString.fromText(lbl)}:{})})));
       });
+      {const nt=b.nb[i+1]?nbPlain(b.nb[i+1]):"";
+        if(nt)keep.push(ctx.register(ctx.obj({Type:"Annot",Subtype:"Text",Name:"Note",Rect:[ox+W-34,oy+H-34,ox+W-12,oy+H-12],C:[0.23,0.29,0.85],F:4,Open:false,
+          Contents:PDFHexString.fromText(nt),T:PDFHexString.fromText("Notebook"),Subj:PDFHexString.fromText("Notebook, page "+(i+1)),MarginNb:PDFString.of(String(i+1))})))}
       if(keep.length||old)pg.node.set(PDFName.of("Annots"),ctx.obj(keep));
     });
     const store=b.notes.map(({editing,...n})=>n);
-    doc.catalog.set(PDFName.of("MarginNotes"),PDFString.of(btoa(unescape(encodeURIComponent(JSON.stringify({v:2,palette:b.palette,notes:store}))))));
+    doc.catalog.set(PDFName.of("MarginNotes"),PDFString.of(btoa(unescape(encodeURIComponent(JSON.stringify({v:3,palette:b.palette,notes:store,nb:b.nb}))))));
     const out=await doc.save();
     if(b.handle){const w=await b.handle.createWritable();await w.write(out);await w.close();b.perm="granted";toast((auto?"Autosaved ":"Saved to ")+b.fname)}
     else{const a=mk("a");a.href=URL.createObjectURL(new Blob([out],{type:"application/pdf"}));a.download=b.fname;a.click();toast("Downloaded "+b.fname+". Replace your original with it.")}
     /* anything typed while the save was running stays marked as unsaved */
-    const clean=snapOf(b.notes,b.palette)===startSnap;
+    const clean=snapOf(b.notes,b.palette,b.nb)===startSnap;
     b.bytes=out;b.diskSize=out.length;b.snap=startSnap;b.dirty=!clean;
     if(b===active){bytes=out;setDirty(!clean)}else renderTabs();
     updateAuto();
