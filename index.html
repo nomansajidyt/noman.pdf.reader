@@ -237,6 +237,83 @@ html[data-theme=dark]{--nbpaper:#1f2233;--nbline:#2d3250;--nbink:#e8eaf6;--nbmar
 #nbtgl.on{background:var(--hover)!important;color:var(--acc)}
 @media(max-width:1300px){#nbtgl .nbl{display:none}}
 @media(max-width:700px){#nbtgl,#nbtool{display:none!important}}
+/* =============== motion: one easing, short durations, calm =============== */
+:root{--ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.2,.9,.3,1.15)}
+@keyframes fadeIn{from{opacity:0}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}}
+@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.97)}}
+@keyframes pop2{from{opacity:0;transform:translateY(6px) scale(.97)}}
+@keyframes popC{from{opacity:0;transform:translateX(-50%) translateY(10px) scale(.97)}}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(16px)}}
+@keyframes boxIn{from{opacity:0;transform:translateY(12px) scale(.94)}}
+@keyframes sheet{from{opacity:0;transform:translateY(28px)}}
+@keyframes fold{from{opacity:0;transform:translateY(-5px)}}
+@keyframes tabIn{from{opacity:0;transform:translateY(8px) scale(.96)}}
+@keyframes hlin{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes nbIn{from{opacity:0;transform:translateX(-14px)}}
+@keyframes shim{from{background-position:120% 0}to{background-position:-120% 0}}
+@keyframes ind{from{transform:translateX(-110%)}to{transform:translateX(280%)}}
+@keyframes dotp{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.55);opacity:.55}}
+@keyframes attn{0%,100%{box-shadow:0 0 0 0 rgba(224,160,48,0)}50%{box-shadow:0 0 0 5px rgba(224,160,48,.3)}}
+@keyframes savedPulse{0%{box-shadow:0 0 0 0 rgba(46,158,91,.65)}70%{box-shadow:0 0 0 12px rgba(46,158,91,0)}100%{box-shadow:0 0 0 0 rgba(46,158,91,0)}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes logoIn{from{opacity:0;transform:scale(.6) rotate(-14deg)}}
+@keyframes barIn{from{opacity:0;transform:translateY(-10px)}}
+/* app shell */
+#bar{animation:barIn .5s var(--ease) both}
+#brand svg{animation:logoIn .7s var(--spring) both;transition:transform .3s var(--spring)}
+#brand:hover svg{transform:rotate(-7deg) scale(1.07)}
+#app.open #dIn{animation:fadeIn .4s .06s ease both}
+.pane.on{animation:rise .28s var(--ease) both}
+.pane li>ul:not([hidden]){animation:fold .22s var(--ease) both;transform-origin:top}
+.nitem{animation:fadeIn .26s ease both;transition:transform .15s var(--ease),background-color .15s}.nitem:hover{transform:translateX(3px)}
+.nitem:nth-child(2){animation-delay:0.000s}.nitem:nth-child(3){animation-delay:0.035s}.nitem:nth-child(4){animation-delay:0.070s}.nitem:nth-child(5){animation-delay:0.105s}.nitem:nth-child(6){animation-delay:0.140s}.nitem:nth-child(7){animation-delay:0.175s}.nitem:nth-child(8){animation-delay:0.210s}.nitem:nth-child(9){animation-delay:0.245s}.nitem:nth-child(10){animation-delay:0.280s}.nitem:nth-child(11){animation-delay:0.315s}.nitem:nth-child(12){animation-delay:0.350s}.nitem:nth-child(13){animation-delay:0.385s}.nitem:nth-child(14){animation-delay:0.420s}
+.tl{transition:transform .15s var(--ease),color .15s}.trow:hover .tl{transform:translateX(3px)}
+.fchip{transition:background-color .15s,color .15s,transform .12s}.fchip:hover{transform:translateY(-1px)}
+/* buttons: soft hover, tactile press */
+button{transition:background-color .16s ease,color .16s ease,border-color .16s ease,box-shadow .16s ease,transform .12s var(--ease),opacity .16s ease,filter .16s ease}
+button:not(:disabled):not(.tg):not(.pd):active{transform:scale(.95)}
+.pd{transition:transform .15s var(--spring),box-shadow .15s}.pd:hover{transform:scale(1.18)}
+/* book tabs */
+.bt{transition:background-color .18s,color .18s}.bt.enter{animation:tabIn .3s var(--ease) both;transform-origin:bottom}
+.bt .dd,#bar button.go.dirty:after{animation:dotp 1.9s ease-in-out infinite}
+/* empty state */
+#empty{animation:rise .6s var(--ease) both}
+#empty .elogo{animation:floaty 5.5s ease-in-out infinite}
+#empty button{transition:transform .15s var(--ease),filter .15s,box-shadow .2s}#empty button:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(58,75,216,.35)}
+/* pages: shimmer while loading, fade in on open / switch */
+.page.near:not(.rd){background:linear-gradient(100deg,#fff 38%,#eceffa 50%,#fff 62%) 0 0/250% 100%;animation:shim 1.5s linear infinite}
+html[data-theme=dark]:not([data-pg=light]) .page.near:not(.rd){background:linear-gradient(100deg,#1a1a1a 38%,#272727 50%,#1a1a1a 62%) 0 0/250% 100%}
+#pages.swap{animation:fadeIn .32s ease both}
+#pages.swap .page canvas{animation:fadeIn .45s ease both}
+#pages.swap .nb{animation:nbIn .5s var(--ease) both}
+.hl i.in{animation:hlin .5s var(--ease) both}
+.nb{transition:box-shadow .25s}.nb:focus-within{box-shadow:0 1px 3px rgba(0,0,0,.2),0 16px 48px rgba(58,75,216,.28)}
+/* pop-ups, toolbars, dialogs, toasts */
+#note{transform-origin:top left;animation-duration:.24s;animation-timing-function:var(--ease)}
+#sel{animation:pop2 .18s var(--ease)}
+#peek,#autoPop{animation:pop2 .18s var(--ease)}#autoPop{transform-origin:top right}
+#whoBox,#nbtool{animation:popC .2s var(--ease)}
+#toast{animation:toastIn .3s var(--ease)}
+#dlg{animation:fadeIn .2s ease}#dlg .box{animation:boxIn .3s var(--spring) both}
+@media(max-width:700px){#note{animation:sheet .28s var(--ease)}}
+/* feedback: saving bar, saved flash, permission nudge */
+#lbar{position:absolute;left:0;right:0;top:0;height:3px;overflow:hidden;z-index:40;opacity:0;pointer-events:none;transition:opacity .25s}
+#lbar.on{opacity:1}
+#lbar i{display:block;height:100%;width:38%;border-radius:3px;background:linear-gradient(90deg,transparent,var(--acc),transparent);animation:ind 1.05s cubic-bezier(.4,0,.2,1) infinite}
+#bar button.go{transition:background-color .3s,transform .12s var(--ease),filter .16s}
+#bar button.go.saved{animation:savedPulse .95s ease-out;background:#2e9e5b}
+.aspill[data-st=perm]{animation:attn 2.2s ease-in-out infinite;border-radius:10px}
+/* smooth theme change (class is added for half a second only) */
+html.tx *,html.tx *:before,html.tx *:after{transition:background-color .35s ease,color .35s ease,border-color .35s ease,box-shadow .35s ease!important}
+/* smooth page arrival: pages appear only when fully drawn (no black flash), then fade in; long jumps get a short rise-in */
+@keyframes cin{from{opacity:0}}
+@keyframes arrive{from{opacity:.2;transform:translateY(22px) scale(.985)}}
+.page.rd>canvas{animation:cin .38s ease both}
+.page.arrive{animation:arrive .5s var(--ease) both}
+#viewer{overscroll-behavior:contain}
+/* respect the system "reduce motion" setting */
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;animation-delay:0s!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
@@ -276,6 +353,7 @@ html[data-theme=dark]{--nbpaper:#1f2233;--nbline:#2d3250;--nbink:#e8eaf6;--nbmar
     <div id="btabs"></div>
     <div id="whoBox"><label for="whoIn">Student name</label><p>Added to every note you create, so others can see who wrote it.</p>
       <input id="whoIn" maxlength="40" placeholder="e.g. Ayesha Khan" autocomplete="off"><button id="whoSave">Save name</button><div style="clear:both"></div></div>
+    <div id="lbar"><i></i></div>
     <div id="autoPop"></div>
     <div id="nbtool">
       <button data-c="bold" title="Bold (Ctrl+B)"><b>B</b></button><button data-c="italic" title="Italic (Ctrl+I)"><i>I</i></button><button data-c="underline" title="Underline (Ctrl+U)"><u>U</u></button><button data-c="strikeThrough" title="Strikethrough"><s>S</s></button>
@@ -379,7 +457,7 @@ function armAuto(b){
 }
 addEventListener("beforeunload",e=>{stash();if(books.some(b=>b.dirty)){e.preventDefault();e.returnValue="";setTimeout(()=>{const l=books.filter(b=>b.dirty);if(l.length&&!$("#dlg"))askSave(l).then(ok=>ok&&toast("Done. You can close the tab now."))},400)}});
 const plain=h=>{const d=document.createElement("div");d.innerHTML=h;return (d.innerText||d.textContent||"").trim()};
-const pageEl=n=>document.querySelector(`.page[data-p="${n}"]`);
+var PG=[];const pageEl=n=>PG[n-1]||null;
 const rid=()=>Math.random().toString(36).slice(2,8);
 const defPalette=()=>[["#ffe14d","Important"],["#7fe08a","Key idea"],["#ff9bb5","Question"],["#8cc7ff","Reference"]].map(([color,label])=>({id:rid(),color,label}));
 const inkOn=h=>{const v=parseInt(String(h).slice(1),16),r=v>>16,g=v>>8&255,b=v&255;return (r*299+g*587+b*114)/1000>150?"#1a1a1a":"#fff"};
@@ -405,7 +483,7 @@ function darken(c){
   for(let i=0;i<d.length;i+=4){d[i]=lut[d[i]];d[i+1]=lut[d[i+1]];d[i+2]=lut[d[i+2]]}
   x.putImageData(im,0,0);
 }
-function rerender(){gen++;document.querySelectorAll(".page").forEach(p=>{p.innerHTML="";delete p.dataset.done;io.unobserve(p);io.observe(p)})}
+function rerender(){gen++;want.clear();drawn.clear();PG.forEach(p=>{resetPage(p);io.unobserve(p);io.observe(p)})}
 const boostTip=()=>$("#boost").title="Text darkness: "+LV[boost]+" (click to change)";boostTip();
 $("#boost").onclick=()=>{boost=(boost+1)%3;try{localStorage.boost=boost}catch(e){}boostTip();toast("Text darkness: "+LV[boost]);if(pdf)rerender()};
 addEventListener("resize",()=>{if(pdf&&devicePixelRatio!==dpr){dpr=devicePixelRatio;document.querySelectorAll(".page").forEach(fit);rerender()}});
@@ -501,7 +579,7 @@ async function load(f,h=null){
 function clearView(){setTimeout(updateAuto,0);
   closeNote();hidePeek();gen++;if(io)io.disconnect();
   pdf=null;bytes=null;handle=null;fname="";notes=[];cur=1;dims={};seen={};act=null;active=null;dirty=false;
-  $("#pages").innerHTML="";$("#sel").style.display="none";$("#savepdf").classList.remove("dirty");
+  $("#pages").innerHTML="";PG=[];if(window.want){want.clear();drawn.clear()}$("#sel").style.display="none";$("#savepdf").classList.remove("dirty");
   $("#empty").style.display="";$("#closebk").style.display="none";
   $("#title").textContent="No book open";$("#total").textContent="";$("#pg").value=1;
   $("#toc").innerHTML='<p class="hint">Open a PDF to see its contents.</p>';$("#nl").innerHTML='<p class="hint">No notes yet.</p>';
@@ -653,7 +731,15 @@ async function gotoDest(dest){
     scrollToPage(idx+1,y,y?60:28);
   }catch(e){toast("Could not follow that link")}
 }
-async function scrollToPage(n,y=0,gap=28){await ensureDims(n);const el=pageEl(n);if(el)$("#viewer").scrollTo({top:Math.max(0,el.offsetTop+y-gap),behavior:"smooth"})}
+async function scrollToPage(n,y=0,gap=28){
+  if(!pdf||!pageEl(n))return;const v=$("#viewer"),g=gen,top=()=>Math.max(0,pageEl(n).offsetTop+y-gap),t0=top();
+  if(Math.abs(t0-v.scrollTop)>v.clientHeight*2.5){v.scrollTo({top:t0,behavior:"auto"});arrive()}   /* long jump: land at once instead of racing through every page */
+  else v.scrollTo({top:t0,behavior:"smooth"});
+  await ensureDims(n);if(g!==gen)return;
+  const t1=top();if(Math.abs(t1-t0)>2)v.scrollTo({top:t1,behavior:"auto"});   /* pages of other sizes shifted the layout: settle on the exact spot */
+}
+function arrive(){const v=$("#viewer");requestAnimationFrame(()=>{if(!PG.length)return;const a=pageAt(v.scrollTop),b=pageAt(v.scrollTop+v.clientHeight);
+  for(let i=a;i<=b;i++){const el=PG[i-1];if(!el)continue;el.classList.remove("arrive");void el.offsetWidth;el.classList.add("arrive");setTimeout(()=>el.classList.remove("arrive"),700)}})}
 
 /* render */
 let dims={},seen={},gen=0,io2=null;
@@ -665,48 +751,87 @@ async function measure(i){
   const v=(await pdf.getPage(i)).getViewport({scale:1});if(g!==gen)return;
   if(!dims[1]||v.width!==dims[1][0]||v.height!==dims[1][1]){dims[i]=[v.width,v.height];const el=pageEl(i);if(el)fit(el)}
 }
-async function ensureDims(n){if(!pdf)return;const need=[];for(let i=1;i<=Math.min(n,pdf.numPages);i++)if(!seen[i])need.push(measure(i));await Promise.all(need)}
+const tick=()=>new Promise(r=>setTimeout(r,0));
+async function ensureDims(n){   /* measure in small batches so a long jump never freezes the UI */
+  if(!pdf)return;const g=gen;n=Math.min(n,pdf.numPages);
+  for(let i=1;i<=n&&g===gen;){const b=[];for(;i<=n&&b.length<24;i++)if(!seen[i])b.push(measure(i));if(b.length){await Promise.all(b);await tick()}}
+}
+function pageAt(y){let lo=0,hi=PG.length-1,r=0;while(lo<=hi){const m=(lo+hi)>>1;if(PG[m].offsetTop<=y){r=m;lo=m+1}else hi=m-1}return r+1}
+const want=new Set(),drawn=new Set();let pumping=false;
+function resetPage(p){p.innerHTML="";delete p.dataset.done;p.classList.remove("rd");drawn.delete(p)}
 async function build(){
-  const box=$("#pages");box.innerHTML="";if(io)io.disconnect();gen++;dims={};seen={};
+  const box=$("#pages");box.innerHTML="";PG=[];want.clear();drawn.clear();if(io)io.disconnect();gen++;dims={};seen={};
   const g1=gen;await measure(1);if(g1!==gen)return;
-  io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting)draw(en.target)}),{root:$("#viewer"),rootMargin:"900px 0px"});
-  for(let i=1;i<=pdf.numPages;i++){const d=mk("div","page");d.dataset.p=i;fit(d);box.appendChild(d);io.observe(d)}
+  io=new IntersectionObserver(es=>{es.forEach(en=>{const el=en.target;el.classList.toggle("near",en.isIntersecting);if(en.isIntersecting){if(!el.dataset.done)want.add(el)}else want.delete(el)});pump()},{root:$("#viewer"),rootMargin:"900px 0px"});
+  const frag=document.createDocumentFragment();
+  for(let i=1;i<=pdf.numPages;i++){const d=mk("div","page");d.dataset.p=i;fit(d);frag.appendChild(d);PG.push(d)}
+  box.appendChild(frag);PG.forEach(d=>io.observe(d));
   $("#zl").textContent=Math.round(scale*100)+"%";
-  const g=gen;(async()=>{for(let i=2;i<=pdf.numPages&&g===gen;i++)await measure(i)})();
+  const g=gen;(async()=>{for(let i=2;i<=pdf.numPages&&g===gen;i++){await measure(i);if(i%40===0)await tick()}})();
+}
+/* draw only what is near the screen, nearest page first, one at a time, giving the browser a breath between pages */
+async function pump(){
+  if(pumping)return;pumping=true;
+  try{while(want.size&&pdf){
+    const v=$("#viewer"),mid=v.scrollTop+v.clientHeight/2;let best=null,bd=1e12;
+    for(const el of want){if(el.dataset.done||!el.isConnected){want.delete(el);continue}const d=Math.abs(el.offsetTop+el.offsetHeight/2-mid);if(d<bd){bd=d;best=el}}
+    if(!best)break;want.delete(best);
+    try{await draw(best)}catch(e){}
+    evict();await tick();
+  }}finally{pumping=false}
+}
+/* keep memory (and scrolling) light in long books: drop pages that are several screens away */
+function evict(){
+  const cap=dpr>1.5?10:14;if(drawn.size<=cap)return;
+  const v=$("#viewer"),mid=v.scrollTop+v.clientHeight/2,keep=v.clientHeight*3,dist=el=>Math.abs(el.offsetTop+el.offsetHeight/2-mid);
+  [...drawn].filter(el=>!el.isConnected||(dist(el)>keep&&!want.has(el)&&!el.contains(document.activeElement))).sort((a,b)=>dist(b)-dist(a)).slice(0,drawn.size-cap).forEach(resetPage);
+}
+async function darkenAsync(c,g){   /* text-darkness curve, a few rows at a time */
+  const gm=GAMMA[boost];if(!gm||gm===1)return;
+  const x=c.getContext("2d"),lut=new Uint8ClampedArray(256);for(let i=0;i<256;i++)lut[i]=255*Math.pow(i/255,gm);
+  const step=Math.max(32,Math.floor(400000/c.width));
+  for(let y=0;y<c.height;y+=step){
+    if(g!==gen)return;const h=Math.min(step,c.height-y),im=x.getImageData(0,y,c.width,h),d=im.data;
+    for(let i=0;i<d.length;i+=4){d[i]=lut[d[i]];d[i+1]=lut[d[i+1]];d[i+2]=lut[d[i+2]]}
+    x.putImageData(im,0,y);if(y+step<c.height)await tick();
+  }
 }
 async function draw(d){
   if(d.dataset.done)return;d.dataset.done=1;const g=gen;
   const p=await pdf.getPage(+d.dataset.p);if(g!==gen)return;const v1=p.getViewport({scale:1}),sz=snap(v1.width,v1.height),vp=p.getViewport({scale:sz.rs/dpr});
   const cw=sz.W/dpr+"px",ch=sz.H/dpr+"px";d.style.width=cw;d.style.height=ch;
-  const c=mk("canvas");c.width=sz.W;c.height=sz.H;c.style.width=cw;c.style.height=ch;d.appendChild(c);
-  d.appendChild(mk("div","hl"));const tl=mk("div","textLayer");d.appendChild(tl);
-  addNb(d);drawHL(d);
-  await p.render({canvasContext:c.getContext("2d",{alpha:false}),viewport:p.getViewport({scale:sz.rs}),background:"#ffffff",annotationMode:0}).promise;
-  if(g!==gen)return;darken(c);
-  const tc=await p.getTextContent();if(g!==gen)return;tl.style.setProperty("--scale-factor",vp.scale);const tds=[],task=pdfjsLib.renderTextLayer({textContentSource:tc,container:tl,viewport:vp,textDivs:tds});
-  task.promise.then(()=>{tl.__m=buildMeta(p,tc,tds)}).catch(()=>{});
+  const c=mk("canvas");c.width=sz.W;c.height=sz.H;c.style.width=cw;c.style.height=ch;
+  await p.render({canvasContext:c.getContext("2d",{alpha:false,willReadFrequently:GAMMA[boost]>1}),viewport:p.getViewport({scale:sz.rs}),background:"#ffffff",annotationMode:0}).promise;
+  if(g!==gen)return;await darkenAsync(c,g);if(g!==gen)return;
+  /* the canvas goes in only once it is finished, so there is never a black or half-drawn page */
+  d.appendChild(c);d.appendChild(mk("div","hl"));const tl=mk("div","textLayer");d.appendChild(tl);addNb(d);drawHL(d);d.classList.add("rd");drawn.add(d);
+  setTimeout(async()=>{try{
+    const tc=await p.getTextContent();if(g!==gen||tl.parentNode!==d)return;
+    tl.style.setProperty("--scale-factor",vp.scale);const tds=[],task=pdfjsLib.renderTextLayer({textContentSource:tc,container:tl,viewport:vp,textDivs:tds});
+    task.promise.then(()=>{tl.__m=buildMeta(p,tc,tds)}).catch(()=>{});
+  }catch(e){}},0);
 }
 function drawHL(d){
   const hl=d&&d.querySelector(".hl");if(!hl)return;hl.innerHTML="";
-  notes.filter(n=>n.page==d.dataset.p).forEach(n=>n.rects.forEach(r=>{
-    const i=mk("i");i.style.cssText=`left:${r[0]*100}%;top:${r[1]*100}%;width:${r[2]*100}%;height:${r[3]*100}%;background:${n.color}`;hl.appendChild(i)}));
+  notes.filter(n=>n.page==d.dataset.p).forEach(n=>{n.rects.forEach((r,ri)=>{
+    const i=mk("i");i.style.cssText=`left:${r[0]*100}%;top:${r[1]*100}%;width:${r[2]*100}%;height:${r[3]*100}%;background:${n.color}`;
+    if(hlNew.has(n.id)){i.className="in";i.style.animationDelay=ri*.07+"s"}hl.appendChild(i)});hlNew.delete(n.id)});
 }
 
 /* navigation */
 function goTo(n){if(!pdf)return;n=Math.max(1,Math.min(pdf.numPages,n));scrollToPage(n);cur=n;$("#pg").value=n}
 $("#prev").onclick=()=>goTo(cur-1);$("#next").onclick=()=>goTo(cur+1);$("#pg").onchange=e=>goTo(+e.target.value);
+let scRaf=0;
 $("#viewer").addEventListener("scroll",()=>{
-  if(!pdf)return;const v=$("#viewer"),mid=v.scrollTop+v.clientHeight/3;let n=1;
-  for(const p of document.querySelectorAll(".page")){if(p.offsetTop<=mid)n=+p.dataset.p;else break}
-  if(n!==cur){cur=n;$("#pg").value=n}
-});
+  if(scRaf||!pdf)return;
+  scRaf=requestAnimationFrame(()=>{scRaf=0;if(!pdf||!PG.length)return;const v=$("#viewer"),n=pageAt(v.scrollTop+v.clientHeight/3);if(n!==cur){cur=n;$("#pg").value=n}});
+},{passive:true});
 function zoom(f,auto){
   if(!pdf)return;closeNote();
-  const v=$("#viewer"),mid=v.scrollTop+v.clientHeight/2;let a=1;
-  for(const p of document.querySelectorAll(".page")){if(p.offsetTop<=mid)a=+p.dataset.p;else break}
+  const v=$("#viewer"),mid=v.scrollTop+v.clientHeight/2,a=pageAt(mid);
   const el=pageEl(a),frac=(mid-el.offsetTop)/el.offsetHeight,cx=(v.scrollLeft+v.clientWidth/2)/v.scrollWidth;
   scale=Math.max(.3,Math.min(4,scale*f));if(!auto&&active)active.uz=1;gen++;
-  document.querySelectorAll(".page").forEach(p=>{p.innerHTML="";delete p.dataset.done;fit(p);io.unobserve(p);io.observe(p)});
+  want.clear();drawn.clear();PG.forEach(p=>{resetPage(p);fit(p);io.unobserve(p);io.observe(p)});
   const e2=pageEl(a);
   v.scrollTop=e2.offsetTop+frac*e2.offsetHeight-v.clientHeight/2;
   v.scrollLeft=cx*v.scrollWidth-v.clientWidth/2;
@@ -857,6 +982,20 @@ function nbKeys(e){
 }
 updateNbBtn();
 
+
+/* ================= Motion helpers ================= */
+const hlNew=new Set();
+function pgSwap(){const P=$("#pages");P.classList.remove("swap");void P.offsetWidth;P.classList.add("swap");clearTimeout(pgSwap.t);pgSwap.t=setTimeout(()=>P.classList.remove("swap"),1100)}
+function flashSaved(){const b=$("#savepdf");b.classList.remove("saved");void b.offsetWidth;b.classList.add("saved");clearTimeout(flashSaved.t);flashSaved.t=setTimeout(()=>b.classList.remove("saved"),1300)}
+let lbN=0;function lbar(on){lbN=Math.max(0,lbN+(on?1:-1));$("#lbar").classList.toggle("on",lbN>0)}
+{const _a=activate;activate=function(...a){if(a[0]!==active)pgSwap();return _a.apply(this,a)}}
+{const _l=load;load=async function(...a){lbar(1);try{return await _l.apply(this,a)}finally{lbar(0)}}}
+{const _s=saveBook;saveBook=function(...a){lbar(1);return _s.apply(this,a).finally(()=>lbar(0))}}
+const tabSeen=new Set();
+{const _rt=renderTabs;renderTabs=function(...a){const r=_rt.apply(this,a);const ts=$("#btabs").querySelectorAll(".bt");books.forEach((b,i)=>{if(!tabSeen.has(b.id)){tabSeen.add(b.id);if(ts[i])ts[i].classList.add("enter")}});return r}}
+$("#nbtgl").addEventListener("click",()=>{if(pdf)pgSwap()},true);
+["#theme","#pgmode"].forEach(id=>$(id).addEventListener("click",()=>{const h=document.documentElement;h.classList.add("tx");clearTimeout(h._tx);h._tx=setTimeout(()=>h.classList.remove("tx"),500)},true));
+
 /* ---- copying text out of the PDF keeps its formatting (bold, italic, sub/superscript, headings, paragraphs) ---- */
 /*PURE-START*/
 const LIG={"ﬀ":"ff","ﬁ":"fi","ﬂ":"fl","ﬃ":"ffi","ﬄ":"ffl","ﬅ":"st","ﬆ":"st"};
@@ -984,7 +1123,7 @@ function makeNote(e){
   const n={id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),color:e.color,cid:e.id,html:"",editing:true,author:student,date:Date.now(),...pending};
   if(!student)toast("Tip: add your name in the toolbar so your notes show who wrote them.");
   notes.push(n);getSelection().removeAllRanges();$("#sel").style.display="none";pending=null;setDirty();
-  drawHL(pageEl(n.page));refreshList();openNote(n.id,true);
+  hlNew.add(n.id);drawHL(pageEl(n.page));refreshList();openNote(n.id,true);
 }
 /* ---- colours belong to each PDF: edit them, name them, recolour notes ---- */
 const palOf=()=>active?active.palette:[];
@@ -1045,8 +1184,21 @@ function place(n){
   let left=pg.offsetLeft+(r[0]+r[2])*pg.offsetWidth-24;
   left=Math.max(12,Math.min(left,st.scrollWidth-pop.offsetWidth-12));
   pop.style.left=left+"px";pop.style.top=(pg.offsetTop+(r[1]+r[3])*pg.offsetHeight+10)+"px";
-  requestAnimationFrame(()=>pop.scrollIntoView({block:"nearest",behavior:"smooth"}));
+  requestAnimationFrame(()=>fitNote());setTimeout(fitNote,340);
 }
+/* bring the whole note into view using layout sizes (the pop-in animation scales the box, so scrollIntoView measured it too small) */
+function fitNote(){
+  const pop=$("#note");if(!act||pop.style.display==="none"||getComputedStyle(pop).position==="fixed")return;
+  const V=$("#viewer");pop.style.maxHeight=Math.max(200,V.clientHeight-28)+"px";
+  const vr=V.getBoundingClientRect(),sr=$("#stage").getBoundingClientRect(),M=16;
+  const top=sr.top-vr.top+V.scrollTop+pop.offsetTop,bot=top+pop.offsetHeight,lft=sr.left-vr.left+V.scrollLeft+pop.offsetLeft,rgt=lft+pop.offsetWidth;
+  let t=V.scrollTop,l=V.scrollLeft;
+  if(bot>t+V.clientHeight-M)t=bot-V.clientHeight+M;if(top<t+M)t=top-M;
+  if(rgt>l+V.clientWidth-M)l=rgt-V.clientWidth+M;if(lft<l+M)l=lft-M;
+  t=Math.max(0,t);l=Math.max(0,l);
+  if(Math.abs(t-V.scrollTop)>1||Math.abs(l-V.scrollLeft)>1)V.scrollTo({top:t,left:l,behavior:"smooth"});
+}
+addEventListener("pointerup",e=>{if(act&&e.target.closest&&e.target.closest(".rz"))setTimeout(fitNote,80)},true);
 function renderPop(n){
   const pop=$("#note");pop.innerHTML="";pop.style.display="flex";pop.style.setProperty("--c",n.color);
   const h=mk("div","nh",`<b>Page ${n.page}</b><span class="plb"></span><span class="sp"></span>`);
@@ -1145,7 +1297,7 @@ async function doSave(b,auto){
     const clean=snapOf(b.notes,b.palette,b.nb)===startSnap;
     b.bytes=out;b.diskSize=out.length;b.snap=startSnap;b.dirty=!clean;
     if(b===active){bytes=out;setDirty(!clean)}else renderTabs();
-    updateAuto();
+    updateAuto();if(b===active)flashSaved();
     return true;
   }catch(e){console.error(e);
     if(auto){if(!b.autoWarned){b.autoWarned=1;toast("Autosave failed. Press Save PDF to try again.")}return false}
