@@ -392,7 +392,7 @@ let dpr=devicePixelRatio||1;
 (async()=>{try{const t=await (await fetch(WORKER)).text();pdfjsLib.GlobalWorkerOptions.workerSrc=URL.createObjectURL(new Blob([t],{type:"text/javascript"}))}catch(e){pdfjsLib.GlobalWorkerOptions.workerSrc=WORKER}})();
 
 const toast=m=>{const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display="none",2800)};
-const setDirty=(v=true)=>{dirty=v;$("#savepdf").classList.toggle("dirty",v);if(active&&active.dirty!==v){active.dirty=v;renderTabs()}if(v&&active)armAuto(active)};
+const setDirty=(v=true)=>{dirty=v;$("#savepdf").classList.toggle("dirty",v);if(active)active.dirty=v;tabDots();if(v&&active)armAuto(active)};
 /* autosave: 2 minutes after the first unsaved change, for books opened with the Open button (they have a writable file handle) */
 /* AutoSave flag in the top bar: On / Off / needs permission / this book has no file to save into */
 function autoState(b){return !b?"none":!b.handle?"nofile":autoPref===false?"off":b.perm!=="granted"?"perm":"on"}
@@ -544,10 +544,16 @@ let books=[],active=null,mru=[],bid=0;
 const snapOf=(n,p,nb)=>JSON.stringify({n:n.map(({editing,...x})=>x),p,nb:nb||{}});
 const touch=b=>{mru=[b,...mru.filter(x=>x!==b)]};
 function stash(){if(!active)return;Object.assign(active,{pdf,bytes,handle,fname,scale,notes,cur,dirty});if(active.ready!==false)active.scroll=$("#viewer").scrollTop}
+function tabDots(){
+  document.querySelectorAll("#btabs .bt").forEach(t=>{
+    const b=books.find(x=>String(x.id)===t.dataset.b);if(!b)return;const d=t.querySelector(".dd");
+    if(b.dirty&&!d)t.insertBefore(mk("i","dd"),t.querySelector(".nm"));else if(!b.dirty&&d)d.remove();
+  });
+}
 function renderTabs(){
   const bar=$("#btabs");bar.style.display=books.length?"flex":"none";bar.innerHTML="";
   books.forEach(b=>{
-    const t=mk("div","bt"+(b===active?" on":""));t.title=b.fname;
+    const t=mk("div","bt"+(b===active?" on":""));t.title=b.fname;t.dataset.b=b.id;
     const nm=mk("span","nm");nm.textContent=b.fname.replace(/\.pdf$/i,"");
     const x=mk("button","",svg("x"));x.title="Close this book";x.onclick=e=>{e.stopPropagation();closeBook(b)};
     t.append(...(b.dirty?[mk("i","dd")]:[]),nm,x);t.onclick=()=>activate(b);bar.append(t);
@@ -1296,7 +1302,7 @@ async function doSave(b,auto){
     /* anything typed while the save was running stays marked as unsaved */
     const clean=snapOf(b.notes,b.palette,b.nb)===startSnap;
     b.bytes=out;b.diskSize=out.length;b.snap=startSnap;b.dirty=!clean;
-    if(b===active){bytes=out;setDirty(!clean)}else renderTabs();
+    if(b===active){bytes=out;setDirty(!clean)}else renderTabs();tabDots();
     updateAuto();if(b===active)flashSaved();
     return true;
   }catch(e){console.error(e);
